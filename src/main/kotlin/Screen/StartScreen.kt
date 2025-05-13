@@ -1,18 +1,21 @@
 package Screen
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 
@@ -20,37 +23,24 @@ class StartScreen : Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.current
-
         var showLoginDialog by remember { mutableStateOf(false) }
         var showSignUpDialog by remember { mutableStateOf(false) }
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                    colors = listOf(Color(0xFF1E1E1E), Color(0xFF121212))
-                ))
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color(0xFF1E1E1E), Color(0xFF121212))
+                    )
+                )
                 .padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Título de la pantalla
-            Text(
-                text = "CANARY'S ESPORTS",
-                fontSize = 36.sp,
-                color = Color.Yellow,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+            AnimatedWelcomeTitle()
 
-            // Frase inspiradora
-            Text(
-                text = "Donde los campeones compiten",
-                fontSize = 18.sp,
-                color = Color.White.copy(alpha = 0.7f),
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Caja de botones
             Box(
@@ -116,7 +106,7 @@ class StartScreen : Screen {
             }
         }
 
-        // Diálogos de Login y Registro
+        // Diálogos
         if (showLoginDialog) {
             LoginOrSignUpDialog(
                 title = "Iniciar Sesión",
@@ -128,6 +118,40 @@ class StartScreen : Screen {
             LoginOrSignUpDialog(
                 title = "Registrarse",
                 onDismiss = { showSignUpDialog = false }
+            )
+        }
+    }
+
+    @Composable
+    fun AnimatedWelcomeTitle() {
+        val animatedAlpha by animateFloatAsState(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 1000)
+        )
+
+        val animatedOffsetY by animateDpAsState(
+            targetValue = 0.dp,
+            animationSpec = tween(durationMillis = 1000)
+        )
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .alpha(animatedAlpha)
+                .offset(y = animatedOffsetY)
+        ) {
+            Text(
+                text = "CANARY'S ESPORTS",
+                fontSize = 36.sp,
+                color = Color.Yellow,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Donde los campeones compiten",
+                fontSize = 18.sp,
+                color = Color.White.copy(alpha = 0.7f),
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(top = 8.dp)
             )
         }
     }
