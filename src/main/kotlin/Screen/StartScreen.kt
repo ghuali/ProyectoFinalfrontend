@@ -30,13 +30,13 @@ class StartScreen : Screen {
             modifier = Modifier
                 .fillMaxSize()
                 .background(brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                    colors = listOf(Color(0xFF7B1FA2), Color(0xFF0000000))
+                    colors = listOf(Color(0xFF7B1FA2), Color(0xFF000000))
                 ))
                 .padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Cargar la imagen desde los recursos (sin subcarpeta)
+            // Cargar la imagen desde los recursos
             val painter = painterResource("CanaryEsportsImg.png")
 
             Image(
@@ -74,6 +74,7 @@ class StartScreen : Screen {
                     .fillMaxWidth(0.85f)
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    // Botón Tablas Equipos
                     Button(
                         onClick = { navigator?.push(WelcomeScreen()) },
                         colors = ButtonDefaults.buttonColors(Color(0xFFFFEB3B)),
@@ -84,9 +85,10 @@ class StartScreen : Screen {
                         Text("Tablas Equipos", fontSize = 16.sp, color = Color.Black)
                     }
 
+                    // Botón Tablas Individuales (color intermedio)
                     Button(
                         onClick = { navigator?.push(PlayerScreen()) },
-                        colors = ButtonDefaults.buttonColors(Color(0xFFFFEB3F)),
+                        colors = ButtonDefaults.buttonColors(Color(0xFFFFB74D)), // Color intermedio
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 6.dp)
@@ -94,6 +96,7 @@ class StartScreen : Screen {
                         Text("Tablas Individuales", fontSize = 16.sp, color = Color.Black)
                     }
 
+                    // Botón Eventos
                     Button(
                         onClick = { navigator?.push(EventosScreen()) },
                         colors = ButtonDefaults.buttonColors(Color(0xFFFF9800)),
