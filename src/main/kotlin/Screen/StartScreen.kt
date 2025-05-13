@@ -2,7 +2,10 @@ package Screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,22 +27,35 @@ class StartScreen : Screen {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black)
+                .background(brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                    colors = listOf(Color(0xFF1E1E1E), Color(0xFF121212))
+                ))
                 .padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Título de la pantalla
             Text(
                 text = "CANARY'S ESPORTS",
                 fontSize = 36.sp,
                 color = Color.Yellow,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 32.dp)
+                modifier = Modifier.padding(bottom = 8.dp)
             )
 
+            // Frase inspiradora
+            Text(
+                text = "Donde los campeones compiten",
+                fontSize = 18.sp,
+                color = Color.White.copy(alpha = 0.7f),
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+
+            // Caja de botones
             Box(
                 modifier = Modifier
-                    .background(Color(0xFF1E1E1E))
+                    .background(Color(0xFF1E1E1E), shape = RoundedCornerShape(16.dp))
                     .padding(16.dp)
                     .fillMaxWidth(0.85f)
             ) {
@@ -100,7 +116,7 @@ class StartScreen : Screen {
             }
         }
 
-        // Dialogs
+        // Diálogos de Login y Registro
         if (showLoginDialog) {
             LoginOrSignUpDialog(
                 title = "Iniciar Sesión",
