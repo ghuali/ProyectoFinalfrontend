@@ -45,148 +45,154 @@ class WelcomeScreen : Screen {
             )
         )
 
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black)
         ) {
-            // Header
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFFFFEB3B))
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .fillMaxSize()
+                    .background(Color.Black)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable {
-                        navigator?.pop()
-                    }
-                ) {
-                    Image(
-                        painter = painterResource("CanaryEsportsImg.png"),
-                        contentDescription = "Logo",
-                        modifier = Modifier
-                            .size(50.dp) // o ajusta el tamaño a lo que quede mejor
-                            .padding(end = 8.dp) // separación entre logo y texto
-                    )
-                    Text(
-                        text = "CANARY'S ESPORTS",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                }
-
-                Row {
-                    Button(
-                        onClick = { showAuthDialog = true },
-                        colors = ButtonDefaults.buttonColors(Color.Black),
-                        modifier = Modifier.padding(end = 8.dp)
-                    ) {
-                        Text("Log in", color = Color.White)
-                    }
-
-                    Button(
-                        onClick = { showAuthDialog = true },
-                        colors = ButtonDefaults.buttonColors(Color.Black)
-                    ) {
-                        Text("Sign up", color = Color.White)
-                    }
-                }
-            }
-
-            // Selector de juegos
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFFFFFF00))
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                IconButton(onClick = {
-                    val currentIndex = juegos.indexOf(selectedGame)
-                    if (currentIndex > 0) selectedGame = juegos[currentIndex - 1]
-                }) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Anterior")
-                }
-
-                Box(
+                // Header
+                Row(
                     modifier = Modifier
-                        .border(2.dp, Color.Black)
-                        .background(Color(0xFFFFCC80))
-                        .padding(8.dp)
+                        .fillMaxWidth()
+                        .background(Color(0xFFFFEB3B))
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        juegos.forEach { juego ->
-                            val isSelected = juego == selectedGame
-                            Text(
-                                text = juego,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp)
-                                    .background(if (isSelected) Color(0xFFFFCDD2) else Color.Transparent)
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    .clickable { selectedGame = juego },
-                                color = Color.Black
-                            )
+                    Row(verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable {
+                            navigator?.pop()
+                        }
+                    ) {
+                        Image(
+                            painter = painterResource("CanaryEsportsImg.png"),
+                            contentDescription = "Logo",
+                            modifier = Modifier
+                                .size(50.dp) // o ajusta el tamaño a lo que quede mejor
+                                .padding(end = 8.dp) // separación entre logo y texto
+                        )
+                        Text(
+                            text = "CANARY'S ESPORTS",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                    }
+
+                    Row {
+                        Button(
+                            onClick = { showAuthDialog = true },
+                            colors = ButtonDefaults.buttonColors(Color.Black),
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Text("Log in", color = Color.White)
+                        }
+
+                        Button(
+                            onClick = { showAuthDialog = true },
+                            colors = ButtonDefaults.buttonColors(Color.Black)
+                        ) {
+                            Text("Sign up", color = Color.White)
                         }
                     }
                 }
 
-                IconButton(onClick = {
-                    val currentIndex = juegos.indexOf(selectedGame)
-                    if (currentIndex < juegos.size - 1) selectedGame = juegos[currentIndex + 1]
-                }) {
-                    Icon(Icons.Filled.ArrowForward, contentDescription = "Siguiente")
+                // Selector de juegos
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFFFFF00))
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    IconButton(onClick = {
+                        val currentIndex = juegos.indexOf(selectedGame)
+                        if (currentIndex > 0) selectedGame = juegos[currentIndex - 1]
+                    }) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Anterior")
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .border(2.dp, Color.Black)
+                            .background(Color(0xFFFFCC80))
+                            .padding(8.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            juegos.forEach { juego ->
+                                val isSelected = juego == selectedGame
+                                Text(
+                                    text = juego,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .padding(horizontal = 8.dp)
+                                        .background(if (isSelected) Color(0xFFFFCDD2) else Color.Transparent)
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        .clickable { selectedGame = juego },
+                                    color = Color.Black
+                                )
+                            }
+                        }
+                    }
+
+                    IconButton(onClick = {
+                        val currentIndex = juegos.indexOf(selectedGame)
+                        if (currentIndex < juegos.size - 1) selectedGame = juegos[currentIndex + 1]
+                    }) {
+                        Icon(Icons.Filled.ArrowForward, contentDescription = "Siguiente")
+                    }
                 }
+
+                // Título del juego
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(selectedGame, fontSize = 36.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                }
+
+                // Tabla: cabecera
+                TableHeader()
+
+                // Tabla: filas
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(600.dp)
+                        .padding(horizontal = 16.dp)
+                ) {
+                    val equipos = equiposPorJuego[selectedGame] ?: emptyList()
+                    val totalFilas = 14
+                    val equiposRellenados = equipos + List(totalFilas - equipos.size) {
+                        Jugador("-", "-", "-", "-")
+                    }
+
+                    itemsIndexed(equiposRellenados) { index, equipo ->
+                        TableRow(
+                            nombre = equipo.nombre,
+                            victorias = equipo.victorias,
+                            derrotas = equipo.derrotas,
+                            index = index
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // Título del juego
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(selectedGame, fontSize = 36.sp, color = Color.White, fontWeight = FontWeight.Bold)
-            }
-
-            // Tabla: cabecera
-            TableHeader()
-
-            // Tabla: filas
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(600.dp)
-                    .padding(horizontal = 16.dp)
-            ) {
-                val equipos = equiposPorJuego[selectedGame] ?: emptyList()
-                val totalFilas = 14
-                val equiposRellenados = equipos + List(totalFilas - equipos.size) {
-                    Jugador("-", "-", "-", "-")
-                }
-
-                itemsIndexed(equiposRellenados) { index, equipo ->
-                    TableRow(
-                        nombre = equipo.nombre,
-                        victorias = equipo.victorias,
-                        derrotas = equipo.derrotas,
-                        index = index
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
+            // Botón Volver
             Button(
                 onClick = { navigator?.pop() },
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .align(Alignment.BottomEnd)  // Esto lo coloca en la esquina inferior derecha
                     .padding(16.dp),
                 colors = ButtonDefaults.buttonColors(Color(0xFFD32F2F))
             ) {
@@ -194,6 +200,7 @@ class WelcomeScreen : Screen {
             }
         }
 
+        // Dialogo de autenticación
         if (showAuthDialog) {
             Dialog(onDismissRequest = { showAuthDialog = false }) {
                 Box(
