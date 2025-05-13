@@ -5,7 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
@@ -29,11 +29,9 @@ class PlayerScreen : Screen {
         val navigator = LocalNavigator.current
         var showAuthDialog by remember { mutableStateOf(false) }
 
-        // Solo juegos individuales
         val juegos = listOf("FIFA", "Clash Royale")
         var selectedGame by remember { mutableStateOf(juegos[0]) }
 
-        // Datos de ejemplo para jugadores individuales
         val jugadoresPorJuego = mapOf(
             "FIFA" to listOf(
                 Jugador("Pepe", "10", "2", "-"),
@@ -149,22 +147,13 @@ class PlayerScreen : Screen {
             }
 
             // Cabecera de la tabla
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.Gray)
-                    .padding(horizontal = 16.dp)
-            ) {
-                Text("Jugador", modifier = Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold)
-                Text("Victorias", modifier = Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold)
-                Text("Derrotas", modifier = Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold)
-            }
+            TableHeader()
 
             // Tabla de jugadores
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(500.dp)
+                    .height(600.dp)
                     .padding(horizontal = 16.dp)
             ) {
                 val jugadores = jugadoresPorJuego[selectedGame] ?: emptyList()
@@ -173,11 +162,12 @@ class PlayerScreen : Screen {
                     Jugador("-", "-", "-", "-")
                 }
 
-                items(jugadoresRellenados) { jugador ->
+                itemsIndexed(jugadoresRellenados) { index, jugador ->
                     TableRow(
                         nombre = jugador.nombre,
                         victorias = jugador.victorias,
-                        derrotas = jugador.derrotas
+                        derrotas = jugador.derrotas,
+                        index = index
                     )
                 }
             }
@@ -265,20 +255,53 @@ class PlayerScreen : Screen {
     }
 
     @Composable
-    private fun TableRow(
-        nombre: String,
-        victorias: String,
-        derrotas: String
-    ) {
+    private fun TableHeader() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.DarkGray)
-                .padding(8.dp)
+                .background(Color(0xFF424242))
+                .border(width = 1.dp, color = Color.Black)
+                .padding(vertical = 12.dp)
         ) {
-            Text(nombre, modifier = Modifier.weight(1f), color = Color.White)
-            Text(victorias, modifier = Modifier.weight(1f), color = Color.White)
-            Text(derrotas, modifier = Modifier.weight(1f), color = Color.White)
+            listOf("Jugador", "Victorias", "Derrotas").forEach { title ->
+                Text(
+                    text = title,
+                    modifier = Modifier
+                        .weight(1f)
+                        .wrapContentWidth(Alignment.CenterHorizontally),
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun TableRow(
+        nombre: String,
+        victorias: String,
+        derrotas: String,
+        index: Int
+    ) {
+        val backgroundColor = if (index % 2 == 0) Color(0xFF2E2E2E) else Color(0xFF424242)
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(backgroundColor)
+                .padding(vertical = 12.dp)
+        ) {
+            listOf(nombre, victorias, derrotas).forEach { content ->
+                Text(
+                    text = content,
+                    modifier = Modifier
+                        .weight(1f)
+                        .wrapContentWidth(Alignment.CenterHorizontally),
+                    color = Color.White,
+                    fontSize = 16.sp
+                )
+            }
         }
     }
 }
