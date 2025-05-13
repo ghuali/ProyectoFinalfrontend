@@ -24,7 +24,6 @@ class EventosScreen : Screen {
     override fun Content() {
         val navigator = LocalNavigator.current
 
-        // Lista de torneos
         val torneos = listOf(
             Triple("Winter Cup", "12/01/2025", "Tenerife"),
             Triple("Spring Clash", "25/03/2025", "Gran Canaria"),
@@ -36,7 +35,6 @@ class EventosScreen : Screen {
                 .fillMaxSize()
                 .background(Color.Black)
         ) {
-            // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -57,7 +55,6 @@ class EventosScreen : Screen {
                 }
             }
 
-            // Título Torneos
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -67,7 +64,6 @@ class EventosScreen : Screen {
                 Text("Torneos", fontSize = 36.sp, color = Color.White, fontWeight = FontWeight.Bold)
             }
 
-            // Lista de torneos como tarjetas (no tabla)
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()

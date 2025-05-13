@@ -22,26 +22,26 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import model.Jugador
 
-class WelcomeScreen : Screen {
+class PlayerScreen : Screen {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.current
         var showAuthDialog by remember { mutableStateOf(false) }
 
-        // Solo juegos por equipo
-        val juegos = listOf("Fortnite", "COD")
+        // Solo juegos individuales
+        val juegos = listOf("FIFA", "Clash Royale")
         var selectedGame by remember { mutableStateOf(juegos[0]) }
 
-        // Datos de ejemplo para juegos por equipo
-        val equiposPorJuego = mapOf(
-            "Fortnite" to listOf(
-                Jugador("Team Alpha", "10", "3", "-"),
-                Jugador("Team Beta", "8", "5", "-")
+        // Datos de ejemplo para jugadores individuales
+        val jugadoresPorJuego = mapOf(
+            "FIFA" to listOf(
+                Jugador("Pepe", "10", "2", "-"),
+                Jugador("Luis", "7", "5", "-")
             ),
-            "COD" to listOf(
-                Jugador("Team Delta", "11", "4", "-"),
-                Jugador("Team Omega", "6", "7", "-")
+            "Clash Royale" to listOf(
+                Jugador("Carlos", "9", "3", "-"),
+                Jugador("Marcos", "5", "6", "-")
             )
         )
 
@@ -84,7 +84,7 @@ class WelcomeScreen : Screen {
                 }
             }
 
-            // Selector de juegos con flechas
+            // Selector de juegos
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -155,29 +155,29 @@ class WelcomeScreen : Screen {
                     .background(Color.Gray)
                     .padding(horizontal = 16.dp)
             ) {
-                Text("Equipo", modifier = Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold)
+                Text("Jugador", modifier = Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold)
                 Text("Victorias", modifier = Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold)
                 Text("Derrotas", modifier = Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold)
             }
 
-            // Tabla de equipos
+            // Tabla de jugadores
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(500.dp)
                     .padding(horizontal = 16.dp)
             ) {
-                val equipos = equiposPorJuego[selectedGame] ?: emptyList()
+                val jugadores = jugadoresPorJuego[selectedGame] ?: emptyList()
                 val totalFilas = 14
-                val equiposRellenados = equipos + List(totalFilas - equipos.size) {
+                val jugadoresRellenados = jugadores + List(totalFilas - jugadores.size) {
                     Jugador("-", "-", "-", "-")
                 }
 
-                items(equiposRellenados) { equipo ->
+                items(jugadoresRellenados) { jugador ->
                     TableRow(
-                        nombre = equipo.nombre,
-                        victorias = equipo.victorias,
-                        derrotas = equipo.derrotas
+                        nombre = jugador.nombre,
+                        victorias = jugador.victorias,
+                        derrotas = jugador.derrotas
                     )
                 }
             }
