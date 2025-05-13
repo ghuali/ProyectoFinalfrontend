@@ -1,23 +1,26 @@
-
-import Screen.StartScreen
-import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.material.MaterialTheme
+import androidx.compose.ui.window.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.Navigator
+import Screen.StartScreen
 
-@Composable
-@Preview
-fun App() {
-
-    MaterialTheme {
-        Navigator(StartScreen())
+fun main() = application {
+    Window(
+        onCloseRequest = ::exitApplication,
+        title = "Canary's Esports",
+        state = WindowState(
+            placement = WindowPlacement.Maximized, // Abre maximizada
+            size = DpSize.Unspecified
+        ),
+        undecorated = false,
+        resizable = true,
+    ) {
+        App()
     }
 }
 
-fun main() = application {
-Window(onCloseRequest = ::exitApplication) {
-App()
-}
+@Composable
+fun App() {
+    Navigator(screen = StartScreen())
 }
