@@ -148,37 +148,42 @@ class WelcomeScreen : Screen {
                 Text(selectedGame, fontSize = 36.sp, color = Color.White, fontWeight = FontWeight.Bold)
             }
 
-            // Cabecera de la tabla
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.Gray)
-                    .padding(horizontal = 16.dp)
-            ) {
-                Text("Equipo", modifier = Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold)
-                Text("Victorias", modifier = Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold)
-                Text("Derrotas", modifier = Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold)
-            }
+            // Contenedor para asegurar que el encabezado y la tabla tengan el mismo ancho
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    // Cabecera de la tabla (ajustada en altura y ancho)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF757575))
+                            .padding(horizontal = 16.dp, vertical = 12.dp) // Aumenté la altura del encabezado
+                    ) {
+                        Text("Equipo", modifier = Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text("Victorias", modifier = Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text("Derrotas", modifier = Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    }
 
-            // Tabla de equipos
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(500.dp)
-                    .padding(horizontal = 16.dp)
-            ) {
-                val equipos = equiposPorJuego[selectedGame] ?: emptyList()
-                val totalFilas = 14
-                val equiposRellenados = equipos + List(totalFilas - equipos.size) {
-                    Jugador("-", "-", "-", "-")
-                }
+                    // Tabla de equipos
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 600.dp) // Aumenté la altura máxima de la tabla
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        val equipos = equiposPorJuego[selectedGame] ?: emptyList()
+                        val totalFilas = 14
+                        val equiposRellenados = equipos + List(totalFilas - equipos.size) {
+                            Jugador("-", "-", "-", "-")
+                        }
 
-                items(equiposRellenados) { equipo ->
-                    TableRow(
-                        nombre = equipo.nombre,
-                        victorias = equipo.victorias,
-                        derrotas = equipo.derrotas
-                    )
+                        items(equiposRellenados) { equipo ->
+                            TableRow(
+                                nombre = equipo.nombre,
+                                victorias = equipo.victorias,
+                                derrotas = equipo.derrotas
+                            )
+                        }
+                    }
                 }
             }
 
@@ -274,11 +279,11 @@ class WelcomeScreen : Screen {
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.DarkGray)
-                .padding(8.dp)
+                .padding(12.dp) // Aumenté la altura de las celdas
         ) {
-            Text(nombre, modifier = Modifier.weight(1f), color = Color.White)
-            Text(victorias, modifier = Modifier.weight(1f), color = Color.White)
-            Text(derrotas, modifier = Modifier.weight(1f), color = Color.White)
+            Text(nombre, modifier = Modifier.weight(1f), color = Color.White, fontSize = 16.sp)
+            Text(victorias, modifier = Modifier.weight(1f), color = Color.White, fontSize = 16.sp)
+            Text(derrotas, modifier = Modifier.weight(1f), color = Color.White, fontSize = 16.sp)
         }
     }
 }
