@@ -5,7 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
@@ -29,11 +29,9 @@ class WelcomeScreen : Screen {
         val navigator = LocalNavigator.current
         var showAuthDialog by remember { mutableStateOf(false) }
 
-        // Solo juegos por equipo
         val juegos = listOf("Fortnite", "COD")
         var selectedGame by remember { mutableStateOf(juegos[0]) }
 
-        // Datos de ejemplo para juegos por equipo
         val equiposPorJuego = mapOf(
             "Fortnite" to listOf(
                 Jugador("Team Alpha", "10", "3", "-"),
@@ -84,7 +82,7 @@ class WelcomeScreen : Screen {
                 }
             }
 
-            // Selector de juegos con flechas
+            // Selector de juegos
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -95,33 +93,29 @@ class WelcomeScreen : Screen {
             ) {
                 IconButton(onClick = {
                     val currentIndex = juegos.indexOf(selectedGame)
-                    if (currentIndex > 0) {
-                        selectedGame = juegos[currentIndex - 1]
-                    }
+                    if (currentIndex > 0) selectedGame = juegos[currentIndex - 1]
                 }) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Flecha izquierda")
+                    Icon(Icons.Filled.ArrowBack, contentDescription = "Anterior")
                 }
 
                 Box(
                     modifier = Modifier
-                        .border(width = 2.dp, color = Color.Black)
+                        .border(2.dp, Color.Black)
                         .background(Color(0xFFFFCC80))
                         .padding(8.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        juegos.forEach { game ->
-                            val isSelected = game == selectedGame
+                        juegos.forEach { juego ->
+                            val isSelected = juego == selectedGame
                             Text(
-                                text = game,
+                                text = juego,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier
                                     .padding(horizontal = 8.dp)
-                                    .background(
-                                        if (isSelected) Color(0xFFFFCDD2) else Color.Transparent
-                                    )
+                                    .background(if (isSelected) Color(0xFFFFCDD2) else Color.Transparent)
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    .clickable { selectedGame = game },
+                                    .clickable { selectedGame = juego },
                                 color = Color.Black
                             )
                         }
@@ -130,11 +124,9 @@ class WelcomeScreen : Screen {
 
                 IconButton(onClick = {
                     val currentIndex = juegos.indexOf(selectedGame)
-                    if (currentIndex < juegos.size - 1) {
-                        selectedGame = juegos[currentIndex + 1]
-                    }
+                    if (currentIndex < juegos.size - 1) selectedGame = juegos[currentIndex + 1]
                 }) {
-                    Icon(Icons.Filled.ArrowForward, contentDescription = "Flecha derecha")
+                    Icon(Icons.Filled.ArrowForward, contentDescription = "Siguiente")
                 }
             }
 
@@ -148,42 +140,29 @@ class WelcomeScreen : Screen {
                 Text(selectedGame, fontSize = 36.sp, color = Color.White, fontWeight = FontWeight.Bold)
             }
 
-            // Contenedor para asegurar que el encabezado y la tabla tengan el mismo ancho
-            Box(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    // Cabecera de la tabla (ajustada en altura y ancho)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color(0xFF757575))
-                            .padding(horizontal = 16.dp, vertical = 12.dp) // Aumenté la altura del encabezado
-                    ) {
-                        Text("Equipo", modifier = Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                        Text("Victorias", modifier = Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                        Text("Derrotas", modifier = Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    }
+            // Tabla: cabecera
+            TableHeader()
 
-                    // Tabla de equipos
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 600.dp) // Aumenté la altura máxima de la tabla
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        val equipos = equiposPorJuego[selectedGame] ?: emptyList()
-                        val totalFilas = 14
-                        val equiposRellenados = equipos + List(totalFilas - equipos.size) {
-                            Jugador("-", "-", "-", "-")
-                        }
+            // Tabla: filas
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(600.dp)
+                    .padding(horizontal = 16.dp)
+            ) {
+                val equipos = equiposPorJuego[selectedGame] ?: emptyList()
+                val totalFilas = 14
+                val equiposRellenados = equipos + List(totalFilas - equipos.size) {
+                    Jugador("-", "-", "-", "-")
+                }
 
-                        items(equiposRellenados) { equipo ->
-                            TableRow(
-                                nombre = equipo.nombre,
-                                victorias = equipo.victorias,
-                                derrotas = equipo.derrotas
-                            )
-                        }
-                    }
+                itemsIndexed(equiposRellenados) { index, equipo ->
+                    TableRow(
+                        nombre = equipo.nombre,
+                        victorias = equipo.victorias,
+                        derrotas = equipo.derrotas,
+                        index = index
+                    )
                 }
             }
 
@@ -200,7 +179,6 @@ class WelcomeScreen : Screen {
             }
         }
 
-        // Diálogo Login/SignUp
         if (showAuthDialog) {
             Dialog(onDismissRequest = { showAuthDialog = false }) {
                 Box(
@@ -208,9 +186,7 @@ class WelcomeScreen : Screen {
                         .background(Color(0xFFD3D3D3))
                         .padding(24.dp)
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = "Sign In",
                             fontSize = 32.sp,
@@ -247,7 +223,7 @@ class WelcomeScreen : Screen {
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Button(
-                            onClick = { /* No funcional todavía */ },
+                            onClick = { /* funcionalidad pendiente */ },
                             colors = ButtonDefaults.buttonColors(Color.Black),
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -270,20 +246,53 @@ class WelcomeScreen : Screen {
     }
 
     @Composable
-    private fun TableRow(
-        nombre: String,
-        victorias: String,
-        derrotas: String
-    ) {
+    private fun TableHeader() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.DarkGray)
-                .padding(12.dp) // Aumenté la altura de las celdas
+                .background(Color(0xFF424242))
+                .border(width = 1.dp, color = Color.Black)
+                .padding(vertical = 12.dp)
         ) {
-            Text(nombre, modifier = Modifier.weight(1f), color = Color.White, fontSize = 16.sp)
-            Text(victorias, modifier = Modifier.weight(1f), color = Color.White, fontSize = 16.sp)
-            Text(derrotas, modifier = Modifier.weight(1f), color = Color.White, fontSize = 16.sp)
+            listOf("Equipo", "Victorias", "Derrotas").forEach { title ->
+                Text(
+                    text = title,
+                    modifier = Modifier
+                        .weight(1f)
+                        .wrapContentWidth(Alignment.CenterHorizontally),
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun TableRow(
+        nombre: String,
+        victorias: String,
+        derrotas: String,
+        index: Int
+    ) {
+        val backgroundColor = if (index % 2 == 0) Color(0xFF2E2E2E) else Color(0xFF424242)
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(backgroundColor)
+                .padding(vertical = 12.dp)
+        ) {
+            listOf(nombre, victorias, derrotas).forEach { content ->
+                Text(
+                    text = content,
+                    modifier = Modifier
+                        .weight(1f)
+                        .wrapContentWidth(Alignment.CenterHorizontally),
+                    color = Color.White,
+                    fontSize = 16.sp
+                )
+            }
         }
     }
 }
