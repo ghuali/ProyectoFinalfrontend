@@ -3,22 +3,20 @@ package Screen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.*
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.FontWeight
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import org.jetbrains.skia.Image.Companion.makeFromEncoded
-import java.io.InputStream
 
 class StartScreen : Screen {
     @Composable
@@ -28,34 +26,29 @@ class StartScreen : Screen {
         var showLoginDialog by remember { mutableStateOf(false) }
         var showSignUpDialog by remember { mutableStateOf(false) }
 
-        // Cargar imagen desde recursos
-        val logoBitmap = remember { loadImageFromResources("CanaryEsportsImg.png") }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(Color(0xFF1E1E1E), Color(0xFF121212))
-                    )
-                )
+                .background(brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                    colors = listOf(Color(0xFF7B1FA2), Color(0xFF0000000))
+                ))
                 .padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Imagen circular
-            logoBitmap?.let {
-                Image(
-                    bitmap = it,
-                    contentDescription = "Logo Canary Esports",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                        .padding(bottom = 16.dp)
-                )
-            }
+            // Cargar la imagen desde los recursos (sin subcarpeta)
+            val painter = painterResource("CanaryEsportsImg.png")
 
+            Image(
+                painter = painter,
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp) // Ajusta la altura según lo desees
+                    .padding(bottom = 24.dp) // Espaciado entre la imagen y el título
+            )
+
+            // Título de la pantalla
             Text(
                 text = "CANARY'S ESPORTS",
                 fontSize = 36.sp,
@@ -64,6 +57,7 @@ class StartScreen : Screen {
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
+            // Frase inspiradora
             Text(
                 text = "Donde los campeones compiten",
                 fontSize = 18.sp,
@@ -72,6 +66,7 @@ class StartScreen : Screen {
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
+            // Caja de botones
             Box(
                 modifier = Modifier
                     .background(Color(0xFF1E1E1E), shape = RoundedCornerShape(16.dp))
@@ -82,15 +77,19 @@ class StartScreen : Screen {
                     Button(
                         onClick = { navigator?.push(WelcomeScreen()) },
                         colors = ButtonDefaults.buttonColors(Color(0xFFFFEB3B)),
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp)
                     ) {
                         Text("Tablas Equipos", fontSize = 16.sp, color = Color.Black)
                     }
 
                     Button(
                         onClick = { navigator?.push(PlayerScreen()) },
-                        colors = ButtonDefaults.buttonColors(Color(0xFFFFEB3B)),
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
+                        colors = ButtonDefaults.buttonColors(Color(0xFFFFEB3F)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp)
                     ) {
                         Text("Tablas Individuales", fontSize = 16.sp, color = Color.Black)
                     }
@@ -98,7 +97,9 @@ class StartScreen : Screen {
                     Button(
                         onClick = { navigator?.push(EventosScreen()) },
                         colors = ButtonDefaults.buttonColors(Color(0xFFFF9800)),
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp)
                     ) {
                         Text("Eventos", fontSize = 16.sp, color = Color.Black)
                     }
@@ -129,12 +130,19 @@ class StartScreen : Screen {
             }
         }
 
+        // Diálogos de Login y Registro
         if (showLoginDialog) {
-            LoginOrSignUpDialog("Iniciar Sesión") { showLoginDialog = false }
+            LoginOrSignUpDialog(
+                title = "Iniciar Sesión",
+                onDismiss = { showLoginDialog = false }
+            )
         }
 
         if (showSignUpDialog) {
-            LoginOrSignUpDialog("Registrarse") { showSignUpDialog = false }
+            LoginOrSignUpDialog(
+                title = "Registrarse",
+                onDismiss = { showSignUpDialog = false }
+            )
         }
     }
 
@@ -142,7 +150,9 @@ class StartScreen : Screen {
     fun LoginOrSignUpDialog(title: String, onDismiss: () -> Unit) {
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = { Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+            title = {
+                Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            },
             text = {
                 Column {
                     OutlinedTextField(
@@ -173,20 +183,5 @@ class StartScreen : Screen {
             backgroundColor = Color.White,
             contentColor = Color.Black
         )
-    }
-
-    // Función auxiliar para cargar la imagen desde la carpeta resources
-    fun loadImageFromResources(resourceName: String): ImageBitmap? {
-        return try {
-            val stream: InputStream? = this::class.java.classLoader.getResourceAsStream(resourceName)
-            stream?.use {
-                val byteArray = it.readBytes()
-                val skiaImage = makeFromEncoded(byteArray)
-                skiaImage.toComposeImageBitmap()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
     }
 }
