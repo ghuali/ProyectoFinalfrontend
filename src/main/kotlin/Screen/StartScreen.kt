@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import network.apiLogIn
+import network.apiRegister
 
 class StartScreen : Screen {
     @Composable
@@ -30,9 +31,7 @@ class StartScreen : Screen {
             }
         } else {
             PantallaInicio(
-                onLoginSuccess = { usuario ->
-                    usuarioAutenticado = usuario
-                }
+                onLoginSuccess = { usuario -> usuarioAutenticado = usuario }
             )
         }
     }
@@ -46,9 +45,11 @@ class StartScreen : Screen {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                    colors = listOf(Color(0xFF7B1FA2), Color(0xFF000000))
-                ))
+                .background(
+                    brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                        colors = listOf(Color(0xFF7B1FA2), Color(0xFF000000))
+                    )
+                )
                 .padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -148,25 +149,22 @@ class StartScreen : Screen {
         }
 
         if (showLoginDialog) {
-            LoginOrSignUpDialog(
-                title = "Iniciar Sesión",
+            LoginDialog(
                 onDismiss = { showLoginDialog = false },
                 onLoginSuccess = onLoginSuccess
             )
         }
 
         if (showSignUpDialog) {
-            LoginOrSignUpDialog(
-                title = "Registrarse",
+            SignUpDialog(
                 onDismiss = { showSignUpDialog = false },
-                onLoginSuccess = onLoginSuccess
+                onSignUpSuccess = onLoginSuccess
             )
         }
     }
 
     @Composable
-    fun LoginOrSignUpDialog(
-        title: String,
+    fun LoginDialog(
         onDismiss: () -> Unit,
         onLoginSuccess: (String) -> Unit
     ) {
@@ -176,7 +174,7 @@ class StartScreen : Screen {
         AlertDialog(
             onDismissRequest = onDismiss,
             title = {
-                Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text("Iniciar Sesión", fontSize = 20.sp, fontWeight = FontWeight.Bold)
             },
             text = {
                 Column {
@@ -204,6 +202,64 @@ class StartScreen : Screen {
                     onDismiss()
                 }) {
                     Text("Aceptar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancelar")
+                }
+            },
+            backgroundColor = Color.White,
+            contentColor = Color.Black
+        )
+    }
+
+    @Composable
+    fun SignUpDialog(
+        onDismiss: () -> Unit,
+        onSignUpSuccess: (String) -> Unit
+    ) {
+        var nombre by remember { mutableStateOf("") }
+        var email by remember { mutableStateOf("") }
+        var password by remember { mutableStateOf("") }
+
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Text("Registrarse", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = nombre,
+                        onValueChange = { nombre = it },
+                        label = { Text("Nombre") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { Text("Email") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Contraseña") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    apiRegister(nombre, email, password) {
+                        onSignUpSuccess(nombre)
+                    }
+                    onDismiss()
+                }) {
+                    Text("Registrarse")
                 }
             },
             dismissButton = {
