@@ -17,12 +17,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import network.apiLogIn
 
 class StartScreen : Screen {
     @Composable
     override fun Content() {
-        val navigator = LocalNavigator.current
+        var usuarioAutenticado by remember { mutableStateOf<String?>(null) }
 
+        if (usuarioAutenticado != null) {
+            PantallaConUsuario(nombre = usuarioAutenticado!!) {
+                usuarioAutenticado = null
+            }
+        } else {
+            PantallaInicio(
+                onLoginSuccess = { usuario ->
+                    usuarioAutenticado = usuario
+                }
+            )
+        }
+    }
+
+    @Composable
+    fun PantallaInicio(onLoginSuccess: (String) -> Unit) {
+        val navigator = LocalNavigator.current
         var showLoginDialog by remember { mutableStateOf(false) }
         var showSignUpDialog by remember { mutableStateOf(false) }
 
@@ -36,7 +53,6 @@ class StartScreen : Screen {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Cargar la imagen desde los recursos
             val painter = painterResource("CanaryEsportsImg.png")
 
             Image(
@@ -44,11 +60,10 @@ class StartScreen : Screen {
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp) // Ajusta la altura según lo desees
-                    .padding(bottom = 24.dp) // Espaciado entre la imagen y el título
+                    .height(300.dp)
+                    .padding(bottom = 24.dp)
             )
 
-            // Título de la pantalla
             Text(
                 text = "CANARY'S ESPORTS",
                 fontSize = 36.sp,
@@ -57,7 +72,6 @@ class StartScreen : Screen {
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            // Frase inspiradora
             Text(
                 text = "Donde los campeones compiten",
                 fontSize = 18.sp,
@@ -66,7 +80,6 @@ class StartScreen : Screen {
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            // Caja de botones
             Box(
                 modifier = Modifier
                     .background(Color(0xFF1E1E1E), shape = RoundedCornerShape(16.dp))
@@ -74,7 +87,6 @@ class StartScreen : Screen {
                     .fillMaxWidth(0.85f)
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    // Botón Tablas Equipos
                     Button(
                         onClick = { navigator?.push(WelcomeScreen()) },
                         colors = ButtonDefaults.buttonColors(Color(0xFFFFEB3B)),
@@ -85,10 +97,9 @@ class StartScreen : Screen {
                         Text("Tablas Equipos", fontSize = 16.sp, color = Color.Black)
                     }
 
-                    // Botón Tablas Individuales (color intermedio)
                     Button(
                         onClick = { navigator?.push(PlayerScreen()) },
-                        colors = ButtonDefaults.buttonColors(Color(0xFFFFB74D)), // Color intermedio
+                        colors = ButtonDefaults.buttonColors(Color(0xFFFFB74D)),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 6.dp)
@@ -96,7 +107,6 @@ class StartScreen : Screen {
                         Text("Tablas Individuales", fontSize = 16.sp, color = Color.Black)
                     }
 
-                    // Botón Eventos
                     Button(
                         onClick = { navigator?.push(EventosScreen()) },
                         colors = ButtonDefaults.buttonColors(Color(0xFFFF9800)),
@@ -116,7 +126,9 @@ class StartScreen : Screen {
                         Button(
                             onClick = { showLoginDialog = true },
                             colors = ButtonDefaults.buttonColors(Color.White),
-                            modifier = Modifier.weight(1f).padding(end = 4.dp)
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 4.dp)
                         ) {
                             Text("Login", color = Color.Black)
                         }
@@ -124,7 +136,9 @@ class StartScreen : Screen {
                         Button(
                             onClick = { showSignUpDialog = true },
                             colors = ButtonDefaults.buttonColors(Color.White),
-                            modifier = Modifier.weight(1f).padding(start = 4.dp)
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 4.dp)
                         ) {
                             Text("Sign Up", color = Color.Black)
                         }
@@ -133,24 +147,32 @@ class StartScreen : Screen {
             }
         }
 
-        // Diálogos de Login y Registro
         if (showLoginDialog) {
             LoginOrSignUpDialog(
                 title = "Iniciar Sesión",
-                onDismiss = { showLoginDialog = false }
+                onDismiss = { showLoginDialog = false },
+                onLoginSuccess = onLoginSuccess
             )
         }
 
         if (showSignUpDialog) {
             LoginOrSignUpDialog(
                 title = "Registrarse",
-                onDismiss = { showSignUpDialog = false }
+                onDismiss = { showSignUpDialog = false },
+                onLoginSuccess = onLoginSuccess
             )
         }
     }
 
     @Composable
-    fun LoginOrSignUpDialog(title: String, onDismiss: () -> Unit) {
+    fun LoginOrSignUpDialog(
+        title: String,
+        onDismiss: () -> Unit,
+        onLoginSuccess: (String) -> Unit
+    ) {
+        var email by remember { mutableStateOf("") }
+        var password by remember { mutableStateOf("") }
+
         AlertDialog(
             onDismissRequest = onDismiss,
             title = {
@@ -159,22 +181,28 @@ class StartScreen : Screen {
             text = {
                 Column {
                     OutlinedTextField(
-                        value = "",
-                        onValueChange = {},
-                        label = { Text("Usuario") },
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { Text("Email") },
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
-                        value = "",
-                        onValueChange = {},
+                        value = password,
+                        onValueChange = { password = it },
                         label = { Text("Contraseña") },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
             },
             confirmButton = {
-                Button(onClick = onDismiss) {
+                Button(onClick = {
+                    apiLogIn(email, password) { user ->
+                        println("Usuario autenticado: $user")
+                        onLoginSuccess(user.nombre)
+                    }
+                    onDismiss()
+                }) {
                     Text("Aceptar")
                 }
             },
@@ -186,5 +214,23 @@ class StartScreen : Screen {
             backgroundColor = Color.White,
             contentColor = Color.Black
         )
+    }
+
+    @Composable
+    fun PantallaConUsuario(nombre: String, onLogout: () -> Unit) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF121212))
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text("Bienvenido, $nombre 👋", fontSize = 28.sp, color = Color.White)
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(onClick = onLogout, colors = ButtonDefaults.buttonColors(Color.Red)) {
+                Text("Cerrar Sesión", color = Color.White)
+            }
+        }
     }
 }
