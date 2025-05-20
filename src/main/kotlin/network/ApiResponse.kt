@@ -10,10 +10,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import model.User
-import utils.sha512
 
 
-fun apiLogIn(email: String, password: String, onSucessResponse: (User) -> Unit) {
+fun apiLogIn(email: String, password: String, onSuccessResponse: (User) -> Unit) {
     val url = "http://127.0.0.1:5000/usuario/login"
     CoroutineScope(Dispatchers.IO).launch {
         try {
@@ -24,7 +23,7 @@ fun apiLogIn(email: String, password: String, onSucessResponse: (User) -> Unit) 
 
             if (response.status == HttpStatusCode.OK) {
                 val user = response.body<User>()
-                onSucessResponse(user)
+                onSuccessResponse(user)
             } else {
                 println("Error: ${response.status}, Body: ${response.bodyAsText()}")
             }
