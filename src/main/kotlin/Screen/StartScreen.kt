@@ -226,14 +226,20 @@ class StartScreen : Screen {
             },
             confirmButton = {
                 Button(onClick = {
-                    apiLogIn(email, password) { user ->
-                        onLoginSuccess(user.nombre)
-                    }
-                    onDismiss()
+                    apiLogIn(email, password,
+                        onSuccessResponse = { user ->
+                            onLoginSuccess(user.nombre)
+                            onDismiss()
+                        },
+                        onError = { errorMessage ->
+                            println("Error en login: $errorMessage")
+                        }
+                    )
                 }) {
                     Text("Aceptar")
                 }
-            },
+            }
+            ,
             dismissButton = {
                 TextButton(onClick = onDismiss) {
                     Text("Cancelar")
