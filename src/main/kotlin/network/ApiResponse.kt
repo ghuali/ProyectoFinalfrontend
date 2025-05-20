@@ -9,11 +9,17 @@ import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import model.User
 import utils.sha512
 
 
-fun apiLogIn(email: String, password: String, onSucessResponse: (User) -> Unit) {
+fun apiLogIn(
+    email: String,
+    password: String,
+    onSuccessResponse: (User) -> Unit,
+    onError: (String) -> Unit
+) {
     val url = "http://127.0.0.1:5000/usuario/login"
     CoroutineScope(Dispatchers.IO).launch {
         try {
@@ -24,15 +30,23 @@ fun apiLogIn(email: String, password: String, onSucessResponse: (User) -> Unit) 
 
             if (response.status == HttpStatusCode.OK) {
                 val user = response.body<User>()
-                onSucessResponse(user)
+                withContext(Dispatchers.Main) {
+                    onSuccessResponse(user)
+                }
             } else {
-                println("Error: ${response.status}, Body: ${response.bodyAsText()}")
+                val error = response.bodyAsText()
+                withContext(Dispatchers.Main) {
+                    onError("Error: ${response.status}. $error")
+                }
             }
         } catch (e: Exception) {
-            println("Excepción en login: ${e.message}")
+            withContext(Dispatchers.Main) {
+                onError("Excepción: ${e.localizedMessage}")
+            }
         }
     }
 }
+
 
 fun apiRegister(nombre: String, email: String, password: String, onSuccessResponse: (User) -> Unit) {
     val url = "http://127.0.0.1:5000/usuario/registro"
