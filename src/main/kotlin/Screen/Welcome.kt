@@ -23,13 +23,17 @@ import androidx.compose.ui.window.Dialog
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import model.Jugador
+import model.User
+import network.apiLogIn
+import network.apiRegister
 
 class WelcomeScreen : Screen {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.current
-        var showAuthDialog by remember { mutableStateOf(false) }
+        var showSignInDialog by remember { mutableStateOf(false) }
+        var showSignUpDialog by remember { mutableStateOf(false) }
 
         val juegos = listOf("Fortnite", "COD")
         var selectedGame by remember { mutableStateOf(juegos[0]) }
@@ -85,7 +89,7 @@ class WelcomeScreen : Screen {
 
                     Row {
                         Button(
-                            onClick = { showAuthDialog = true },
+                            onClick = { showSignInDialog = true },  // Abrir solo diálogo de login
                             colors = ButtonDefaults.buttonColors(Color.Black),
                             modifier = Modifier.padding(end = 8.dp)
                         ) {
@@ -93,7 +97,7 @@ class WelcomeScreen : Screen {
                         }
 
                         Button(
-                            onClick = { showAuthDialog = true },
+                            onClick = { showSignUpDialog = true },  // Abrir solo diálogo de registro
                             colors = ButtonDefaults.buttonColors(Color.Black)
                         ) {
                             Text("Sign up", color = Color.White)
@@ -201,69 +205,26 @@ class WelcomeScreen : Screen {
         }
 
         // Dialogo de autenticación
-        if (showAuthDialog) {
-            Dialog(onDismissRequest = { showAuthDialog = false }) {
-                Box(
-                    modifier = Modifier
-                        .background(Color(0xFFD3D3D3))
-                        .padding(24.dp)
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "Sign In",
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 16.dp),
-                            color = Color.Black
-                        )
-
-                        var username by remember { mutableStateOf("") }
-                        var password by remember { mutableStateOf("") }
-
-                        Text("Usuario", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                        TextField(
-                            value = username,
-                            onValueChange = { username = it },
-                            placeholder = { Text("Introducir Usuario") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.White)
-                        )
-
-                        Text("Contraseña", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                        TextField(
-                            value = password,
-                            onValueChange = { password = it },
-                            placeholder = { Text("Introducir Contraseña") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.White)
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Button(
-                            onClick = { /* funcionalidad pendiente */ },
-                            colors = ButtonDefaults.buttonColors(Color.Black),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Iniciar Sesión", color = Color.Yellow, fontWeight = FontWeight.Bold)
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Button(
-                            onClick = { showAuthDialog = false },
-                            colors = ButtonDefaults.buttonColors(Color.Gray),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Cerrar", color = Color.White)
-                        }
-                    }
+        if (showSignInDialog) {
+            SignInDialog(
+                onDismiss = { showSignInDialog = false },
+                onSuccess = { user ->
+                    showSignInDialog = false
+                    // aquí manejas el usuario logueado, por ejemplo imprimir:
+                    println("Login exitoso. Usuario: ${user.nombre}")
                 }
-            }
+            )
+        }
+
+        if (showSignUpDialog) {
+            SignUpDialog(
+                onDismiss = { showSignUpDialog = false },
+                onSignUpSuccess = { user ->
+                    showSignUpDialog = false
+                    // aquí manejas el usuario registrado, por ejemplo imprimir:
+                    println("Registro exitoso. Usuario: ${user.nombre}")
+                }
+            )
         }
     }
 
@@ -317,4 +278,190 @@ class WelcomeScreen : Screen {
             }
         }
     }
+    @Composable
+    fun SignUpDialog(
+        onDismiss: () -> Unit,
+        onSignUpSuccess: (User) -> Unit
+    ) {
+        var nombre by remember { mutableStateOf("") }
+        var email by remember { mutableStateOf("") }
+        var password by remember { mutableStateOf("") }
+        var errorMessage by remember { mutableStateOf<String?>(null) }
+
+        Dialog(onDismissRequest = onDismiss) {
+            Box(
+                modifier = Modifier
+                    .background(Color(0xFFD3D3D3))
+                    .padding(24.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Registrarse",
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 16.dp),
+                        color = Color.Black
+                    )
+
+                    Text("Nombre", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                    TextField(
+                        value = nombre,
+                        onValueChange = { nombre = it },
+                        placeholder = { Text("Introducir Nombre") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.White)
+                    )
+
+                    Text("Email", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                    TextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        placeholder = { Text("Introducir Email") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.White)
+                    )
+
+                    Text("Contraseña", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                    TextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        placeholder = { Text("Introducir Contraseña") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.White)
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {
+                            apiRegister(nombre, email, password,
+                                onSuccessResponse = { user ->
+                                    onSignUpSuccess(user)
+                                    onDismiss()
+                                }
+                            )
+                        },
+                        colors = ButtonDefaults.buttonColors(Color.Black),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Registrarse", color = Color.Yellow, fontWeight = FontWeight.Bold)
+                    }
+
+                    if (errorMessage != null) {
+                        Text(
+                            text = errorMessage!!,
+                            color = Color.Red,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Button(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.buttonColors(Color.Gray),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Cerrar", color = Color.White)
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun SignInDialog(
+        onDismiss: () -> Unit,
+        onSuccess: (User) -> Unit
+    ) {
+        var email by remember { mutableStateOf("") }
+        var password by remember { mutableStateOf("") }
+        var errorMessage by remember { mutableStateOf<String?>(null) }
+
+        Dialog(onDismissRequest = onDismiss) {
+            Box(
+                modifier = Modifier
+                    .background(Color(0xFFD3D3D3))
+                    .padding(24.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Iniciar Sesión",
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 16.dp),
+                        color = Color.Black
+                    )
+
+                    Text("Email", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                    TextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        placeholder = { Text("Introducir Email") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.White)
+                    )
+
+                    Text("Contraseña", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                    TextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        placeholder = { Text("Introducir Contraseña") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.White)
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {
+                            apiLogIn(email, password,
+                                onSuccessResponse = { user ->
+                                    onSuccess(user)
+                                    onDismiss()
+                                },
+                                onError = { error ->
+                                    errorMessage = error
+                                }
+                            )
+                        },
+                        colors = ButtonDefaults.buttonColors(Color.Black),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Iniciar Sesión", color = Color.Yellow, fontWeight = FontWeight.Bold)
+                    }
+
+                    if (errorMessage != null) {
+                        Text(
+                            text = errorMessage!!,
+                            color = Color.Red,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Button(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.buttonColors(Color.Gray),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Cerrar", color = Color.White)
+                    }
+                }
+            }
+        }
+    }
+
+
 }
