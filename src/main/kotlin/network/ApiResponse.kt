@@ -9,6 +9,7 @@ import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import model.LoginResponse
 import model.User
 
 
@@ -22,8 +23,8 @@ fun apiLogIn(email: String, password: String, onSuccessResponse: (User) -> Unit)
             }
 
             if (response.status == HttpStatusCode.OK) {
-                val user = response.body<User>()
-                onSuccessResponse(user)
+                val loginResponse = response.body<LoginResponse>()
+                onSuccessResponse(loginResponse.usuario)
             } else {
                 println("Error: ${response.status}, Body: ${response.bodyAsText()}")
             }
