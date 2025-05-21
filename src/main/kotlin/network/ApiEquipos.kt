@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import model.Equipo
+import model.EquipoResumen
 import network.NetworkUtils.httpClient
 
 fun getEquipos(onSuccessResponse: (List<Equipo>) -> Unit) {
@@ -28,13 +29,13 @@ fun getEquipos(onSuccessResponse: (List<Equipo>) -> Unit) {
     }
 }
 
-fun getEquiposPorJuego(idJuego: Int, onSuccessResponse: (List<Equipo>) -> Unit) {
+fun getEquiposPorJuego(idJuego: Int, onSuccessResponse: (List<EquipoResumen>) -> Unit) {
     val url = "http://127.0.0.1:5000/equipos/por-juego/$idJuego"
     CoroutineScope(Dispatchers.IO).launch {
         try {
             val response = httpClient.get(url)
             if (response.status == HttpStatusCode.OK) {
-                val equipos = response.body<List<Equipo>>()
+                val equipos = response.body<List<EquipoResumen>>()
                 onSuccessResponse(equipos)
             } else {
                 println("Error: ${response.status}")
@@ -44,5 +45,6 @@ fun getEquiposPorJuego(idJuego: Int, onSuccessResponse: (List<Equipo>) -> Unit) 
         }
     }
 }
+
 
 

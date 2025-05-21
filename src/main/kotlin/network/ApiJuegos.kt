@@ -11,7 +11,7 @@ import model.Juego
 import network.NetworkUtils.httpClient
 
 fun getJuegosPorEquipo(onSuccessResponse: (List<Juego>) -> Unit) {
-    val url = "http://127.0.0.1:5000/juegos/equipo"
+    val url = "http://127.0.0.1:5000/juegos?tipo=equipo"
     CoroutineScope(Dispatchers.IO).launch {
         try {
             val response = httpClient.get(url)
@@ -27,7 +27,7 @@ fun getJuegosPorEquipo(onSuccessResponse: (List<Juego>) -> Unit) {
         }
     }
 }fun getJuegosIndividuales(onSuccessResponse: (List<Juego>) -> Unit) {
-    val url = "http://127.0.0.1:5000/juegos/individual"
+    val url = "http://127.0.0.1:5000/juegos?tipo=individual"
     CoroutineScope(Dispatchers.IO).launch {
         try {
             val response = httpClient.get(url)

@@ -23,6 +23,7 @@ import androidx.compose.ui.window.Dialog
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import model.Equipo
+import model.EquipoResumen
 import model.Juego
 import model.User
 import network.apiLogIn
@@ -43,7 +44,7 @@ class WelcomeScreen : Screen {
 
         var juegos by remember { mutableStateOf<List<Juego>>(emptyList()) }
         var selectedGameIndex by remember { mutableStateOf(0) }
-        var equipos by remember { mutableStateOf<List<Equipo>>(emptyList()) }
+        var equipos by remember { mutableStateOf<List<EquipoResumen>>(emptyList()) }
 
         LaunchedEffect(Unit) {
             getJuegosPorEquipo { juegosApi ->
@@ -187,14 +188,14 @@ class WelcomeScreen : Screen {
                 ) {
                     val totalFilas = 14
                     val equiposRellenados = equipos + List(totalFilas - equipos.size) {
-                        Equipo("-", "-", "-")
+                        EquipoResumen("-", 0, 0)
                     }
 
                     itemsIndexed(equiposRellenados) { index, equipo ->
                         TableRow(
                             nombre = equipo.nombre,
-                            victorias = equipo.victorias,
-                            derrotas = equipo.derrotas,
+                            victorias = equipo.victorias.toString(),
+                            derrotas = equipo.derrotas.toString(),
                             index = index
                         )
                     }
