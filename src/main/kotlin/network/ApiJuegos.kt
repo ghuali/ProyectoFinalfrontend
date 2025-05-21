@@ -26,7 +26,9 @@ fun getJuegosPorEquipo(onSuccessResponse: (List<Juego>) -> Unit) {
             println("Exception: ${e.message}")
         }
     }
-}fun getJuegosIndividuales(onSuccessResponse: (List<Juego>) -> Unit) {
+}
+
+fun getJuegosIndividuales(onSuccessResponse: (List<Juego>) -> Unit) {
     val url = "http://127.0.0.1:5000/juegos?tipo=individual"
     CoroutineScope(Dispatchers.IO).launch {
         try {
