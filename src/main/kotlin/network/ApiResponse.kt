@@ -1,6 +1,4 @@
 package network
-import model.LoginRequest
-import model.RegisterRequest
 import network.NetworkUtils.httpClient
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -9,8 +7,7 @@ import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import model.LoginResponse
-import model.User
+import model.*
 
 
 fun apiLogIn(email: String, password: String, onSuccessResponse: (User) -> Unit) {
@@ -44,7 +41,8 @@ fun apiRegister(nombre: String, email: String, password: String, onSuccessRespon
             }
 
             if (response.status == HttpStatusCode.OK) {
-                val user = response.body<User>()
+                val registerResponse = response.body<RegisterResponse>()
+                val user = registerResponse.usuario.copy(token = registerResponse.token)
                 onSuccessResponse(user)
             } else {
                 println("Error en registro: ${response.status}, Body: ${response.bodyAsText()}")
