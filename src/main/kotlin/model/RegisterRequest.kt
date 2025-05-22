@@ -8,3 +8,9 @@ data class RegisterRequest(
     val email: String,
     val contraseña: String
 )
+
+@Serializable
+data class RegisterResponse(
+    val token: String,
+    val usuario: User
+)
