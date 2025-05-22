@@ -149,6 +149,16 @@ class StartScreen : Screen {
                             Text("Eventos", fontSize = 16.sp, color = Color.Black)
                         }
 
+                        Button(
+                            onClick = { navigator?.push(TorneoScreen()) },
+                            colors = ButtonDefaults.buttonColors(Color(0xFFFF9800)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp)
+                        ) {
+                            Text("Torneo", fontSize = 16.sp, color = Color.Black)
+                        }
+
                         Divider(color = Color.Gray, thickness = 1.dp, modifier = Modifier.padding(vertical = 12.dp))
 
                         if (usuario == null) {
