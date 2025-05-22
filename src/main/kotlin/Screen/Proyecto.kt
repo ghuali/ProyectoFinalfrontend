@@ -22,9 +22,8 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import model.NuevaTarea
 import model.Proyecto
-import model.Tarea
-import network.asignarTarea
-import network.obtenerTareas
+
+
 
 
 
