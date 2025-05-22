@@ -30,6 +30,7 @@ import network.apiLogIn
 import network.apiRegister
 import network.getEquiposPorJuego
 import network.getJuegosPorEquipo
+import ViewModel.SessionManager
 
 
 
@@ -223,6 +224,10 @@ class WelcomeScreen : Screen {
                 onSuccess = { user ->
                     showSignInDialog = false
                     println("Login exitoso. Usuario: ${user.nombre}")
+
+                    // Guardar en SessionManager
+                    SessionManager.authToken = user.token
+                    SessionManager.currentUser = user
                 }
             )
         }
@@ -233,8 +238,13 @@ class WelcomeScreen : Screen {
                 onSignUpSuccess = { user ->
                     showSignUpDialog = false
                     println("Registro exitoso. Usuario: ${user.nombre}")
+
+                    // Guardar en SessionManager
+                    SessionManager.authToken = user.token
+                    SessionManager.currentUser = user
                 }
             )
+
         }
     }
 
