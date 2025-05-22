@@ -1,5 +1,6 @@
 package Screen
 
+import ViewModel.SessionManager
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -41,6 +42,7 @@ class PlayerScreen : Screen {
         var authMessage by remember { mutableStateOf<String?>(null) }
         var loggedUser by remember { mutableStateOf<User?>(null) }
 
+        var authToken by remember { mutableStateOf<String?>(null) }
         var juegos by remember { mutableStateOf<List<Juego>>(emptyList()) }
         var selectedGameIndex by remember { mutableStateOf(0) }
         val selectedGame = juegos.getOrNull(selectedGameIndex)
@@ -227,7 +229,11 @@ class PlayerScreen : Screen {
                 onDismiss = { showSignInDialog = false },
                 onSuccess = { user ->
                     showSignInDialog = false
+                    SessionManager.authToken = user.token  // Asumiendo que User tiene token
+                    SessionManager.currentUser = user
                     println("Login exitoso. Usuario: ${user.nombre}")
+                    loggedUser = user
+                    authToken = user.token
                 }
             )
         }
@@ -237,7 +243,11 @@ class PlayerScreen : Screen {
                 onDismiss = { showSignUpDialog = false },
                 onSignUpSuccess = { user ->
                     showSignUpDialog = false
+                    SessionManager.authToken = user.token
+                    SessionManager.currentUser = user
                     println("Registro exitoso. Usuario: ${user.nombre}")
+                    loggedUser = user
+                    authToken = user.token
                 }
             )
         }
