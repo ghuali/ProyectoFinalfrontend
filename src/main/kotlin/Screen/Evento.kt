@@ -11,7 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,17 +21,22 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import model.Evento
+import network.getEventos
 
 class EventosScreen : Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.current
+        val eventosState = remember { mutableStateOf<List<Evento>>(emptyList()) }
 
-        val torneos = listOf(
-            Triple("Winter Cup", "12/01/2025", "Tenerife"),
-            Triple("Spring Clash", "25/03/2025", "Gran Canaria"),
-            Triple("Summer Brawl", "10/07/2025", "Lanzarote")
-        )
+        // Llama al backend para obtener los eventos
+        LaunchedEffect(Unit) {
+            getEventos { eventos ->
+                println("Eventos recibidos: $eventos")
+                eventosState.value = eventos
+            }
+        }
 
         Box(
             modifier = Modifier
@@ -41,8 +46,9 @@ class EventosScreen : Screen {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = 80.dp)  // Para asegurarse de que el contenido no se superponga al botón
+                    .padding(bottom = 80.dp)
             ) {
+                // Header
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -73,22 +79,24 @@ class EventosScreen : Screen {
                     }
                 }
 
+                // Título
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Torneos", fontSize = 36.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("Eventos", fontSize = 36.sp, color = Color.White, fontWeight = FontWeight.Bold)
                 }
 
+                // Lista de eventos reales
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
-                        .weight(1f, fill = true)
+                        .weight(1f)
                 ) {
-                    items(torneos) { torneo ->
+                    items(eventosState.value) { evento ->
                         Card(
                             shape = RoundedCornerShape(12.dp),
                             backgroundColor = Color.DarkGray,
@@ -97,25 +105,23 @@ class EventosScreen : Screen {
                                 .padding(vertical = 8.dp)
                                 .border(1.dp, Color.LightGray, RoundedCornerShape(12.dp))
                         ) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                            ) {
-                                Text(torneo.first, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(evento.nombre, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text("Fecha: ${torneo.second}", color = Color.White, fontSize = 16.sp)
-                                Text("Ubicación: ${torneo.third}", color = Color.White, fontSize = 16.sp)
+                                Text("Tipo: ${evento.tipo}", color = Color.White, fontSize = 16.sp)
+                                Text("Año: ${evento.anio}", color = Color.White, fontSize = 16.sp)
                             }
                         }
                     }
+
                 }
             }
 
-            // Botón Volver en la esquina inferior derecha
+            // Botón Volver
             Button(
                 onClick = { navigator?.pop() },
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)  // Esto lo coloca en la esquina inferior derecha
+                    .align(Alignment.BottomEnd)
                     .padding(16.dp),
                 colors = ButtonDefaults.buttonColors(Color(0xFFD32F2F))
             ) {
