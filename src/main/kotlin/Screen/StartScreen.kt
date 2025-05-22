@@ -18,28 +18,31 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import model.User
 import network.apiLogIn
 import network.apiRegister
 
 class StartScreen : Screen {
     @Composable
     override fun Content() {
-        var usuarioAutenticado by remember { mutableStateOf<String?>(null) }
+        var usuario by remember { mutableStateOf<User?>(null) }
 
         PantallaInicio(
-            usuario = usuarioAutenticado,
-            onLoginSuccess = { usuarioAutenticado = it },
-            onLogout = { usuarioAutenticado = null }
+            usuario = usuario,
+            onLoginSuccess = { usuario = it },
+            onLogout = { usuario = null }
         )
     }
 
     @Composable
     fun PantallaInicio(
-        usuario: String?,
-        onLoginSuccess: (String) -> Unit,
+        usuario: User?,
+        onLoginSuccess: (User) -> Unit,
         onLogout: () -> Unit
     ) {
         val navigator = LocalNavigator.current
+
+        val token = usuario?.token
         var showLoginDialog by remember { mutableStateOf(false) }
         var showSignUpDialog by remember { mutableStateOf(false) }
 
@@ -63,7 +66,7 @@ class StartScreen : Screen {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Bienvenido, $usuario 👋",
+                        text = "Bienvenido, ${usuario.nombre} 👋",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -197,7 +200,7 @@ class StartScreen : Screen {
     @Composable
     fun LoginDialog(
         onDismiss: () -> Unit,
-        onLoginSuccess: (String) -> Unit
+        onLoginSuccess: (User) -> Unit
     ) {
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
@@ -227,7 +230,7 @@ class StartScreen : Screen {
             confirmButton = {
                 Button(onClick = {
                     apiLogIn(email, password) { user ->
-                        onLoginSuccess(user.nombre)
+                        onLoginSuccess(user)
                     }
                     onDismiss()
                 }) {
@@ -247,7 +250,7 @@ class StartScreen : Screen {
     @Composable
     fun SignUpDialog(
         onDismiss: () -> Unit,
-        onSignUpSuccess: (String) -> Unit
+        onSignUpSuccess: (User) -> Unit
     ) {
         var nombre by remember { mutableStateOf("") }
         var email by remember { mutableStateOf("") }
@@ -284,8 +287,8 @@ class StartScreen : Screen {
             },
             confirmButton = {
                 Button(onClick = {
-                    apiRegister(nombre, email, password) {
-                        onSignUpSuccess(nombre)
+                    apiRegister(nombre, email, password) { user ->
+                        onSignUpSuccess(user)
                     }
                     onDismiss()
                 }) {
