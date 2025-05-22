@@ -7,5 +7,6 @@ data class User(
     val id: Int,
     val nombre: String,
     val rol: String,
-    val email: String
+    val email: String,
+    val token: String? = null
 )
