@@ -1,6 +1,7 @@
 package Screen
 
 import ViewModel.SessionManager
+import ViewModel.SessionManager.currentUser
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -30,6 +31,28 @@ import network.getEventos
 class EventosScreen : Screen {
     @Composable
     override fun Content() {
+        val usuario = SessionManager.currentUser
+
+        eventoPantalla(
+            usuario = usuario,
+            onLoginSuccess = { user ->
+                // Actualizamos SessionManager aquí
+                SessionManager.authToken = user.token
+                SessionManager.currentUser = user
+            },
+            onLogout = {
+                SessionManager.authToken = null
+                SessionManager.currentUser = null
+            }
+        )
+    }
+
+    @Composable
+    fun eventoPantalla(
+        usuario: User?,
+        onLoginSuccess: (User) -> Unit,
+        onLogout: () -> Unit
+    ){
         val navigator = LocalNavigator.current
         val eventosState = remember { mutableStateOf<List<Evento>>(emptyList()) }
 
@@ -84,19 +107,46 @@ class EventosScreen : Screen {
                         )
                     }
                     Row {
-                        Button(
-                            onClick = { showSignInDialog = true },
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black),
-                            modifier = Modifier.padding(end = 8.dp)
-                        ) {
-                            Text("Log in", color = Color.White)
-                        }
+                        if (usuario != null) {
+                            var expanded by remember { mutableStateOf(false) }
 
-                        Button(
-                            onClick = { showSignUpDialog = true },
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black)
-                        ) {
-                            Text("Sign up", color = Color.White)
+                            Box {
+                                Text(
+                                    currentUser?.nombre ?: "Usuario",
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.clickable { expanded = true }
+                                )
+
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false },
+                                ) {
+                                    DropdownMenuItem(onClick = {
+                                        expanded = false
+                                        onLogout()
+                                    }) {
+                                        Text("Cerrar sesión")
+                                    }
+                                }
+                            }
+
+                        } else {
+
+                            Button(
+                                onClick = { showSignInDialog = true },
+                                colors = ButtonDefaults.buttonColors(Color.Black),
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Text("Log in", color = Color.White)
+                            }
+
+                            Button(
+                                onClick = { showSignUpDialog = true },
+                                colors = ButtonDefaults.buttonColors(Color.Black)
+                            ) {
+                                Text("Sign up", color = Color.White)
+                            }
                         }
                     }
                 }
@@ -155,11 +205,8 @@ class EventosScreen : Screen {
                 onDismiss = { showSignInDialog = false },
                 onSuccess = { user ->
                     showSignInDialog = false
+                    onLoginSuccess(user)
                     println("Login exitoso. Usuario: ${user.nombre}")
-
-                    // Guardar en SessionManager
-                    SessionManager.authToken = user.token
-                    SessionManager.currentUser = user
                 }
             )
         }
@@ -170,15 +217,13 @@ class EventosScreen : Screen {
                 onSignUpSuccess = { user ->
                     showSignUpDialog = false
                     println("Registro exitoso. Usuario: ${user.nombre}")
-
-                    // Guardar en SessionManager
-                    SessionManager.authToken = user.token
-                    SessionManager.currentUser = user
+                    onLoginSuccess(user)
                 }
             )
 
         }
     }
+
     @Composable
     fun SignUpDialog(
         onDismiss: () -> Unit,
