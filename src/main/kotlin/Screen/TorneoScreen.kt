@@ -1,6 +1,8 @@
 package Screen
 
 import ViewModel.SessionManager
+import ViewModel.SessionManager.currentUser
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
@@ -30,6 +33,28 @@ import network.*
 class TorneoScreen : Screen {
     @Composable
     override fun Content() {
+        val usuario = SessionManager.currentUser
+
+        torneoPantalla(
+            usuario = usuario,
+            onLoginSuccess = { user ->
+                // Actualizamos SessionManager aquí
+                SessionManager.authToken = user.token
+                SessionManager.currentUser = user
+            },
+            onLogout = {
+                SessionManager.authToken = null
+                SessionManager.currentUser = null
+            }
+        )
+    }
+
+    @Composable
+    fun torneoPantalla(
+        usuario: User?,
+        onLoginSuccess: (User) -> Unit,
+        onLogout: () -> Unit
+    ){
         val navigator = LocalNavigator.current
 
         var eventos by remember { mutableStateOf<List<Evento>>(emptyList()) }
@@ -47,36 +72,91 @@ class TorneoScreen : Screen {
             getEventos { eventos = it }
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black)
-        ) {
-            Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-
-                // Header con botón Volver
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+            ) {
+                // Header
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFFFEB3B))
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    if (torneoSeleccionado != null) {
-                        IconButton(onClick = { torneoSeleccionado = null; clasificacion = emptyList() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable {
+                            navigator?.pop()
                         }
-                    } else if (eventoSeleccionado != null) {
-                        IconButton(onClick = { eventoSeleccionado = null; torneos = emptyList() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                    ) {
+                        Image(
+                            painter = painterResource("CanaryEsportsImg.png"),
+                            contentDescription = "Logo",
+                            modifier = Modifier
+                                .size(50.dp)
+                                .padding(end = 8.dp)
+                        )
+                        Text(
+                            text = "CANARY'S ESPORTS",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                    }
+                    Row {
+                        if (usuario != null) {
+                            var expanded by remember { mutableStateOf(false) }
+
+                            Box {
+                                Text(
+                                    currentUser?.nombre ?: "Usuario",
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.clickable { expanded = true }
+                                )
+
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false },
+                                ) {
+                                    DropdownMenuItem(onClick = {
+                                        expanded = false
+                                        navigator?.push(EditScreen())
+                                    }) {
+                                        Text("Editar perfil")
+                                    }
+
+                                    DropdownMenuItem(onClick = {
+                                        expanded = false
+                                        onLogout()
+                                    }) {
+                                        Text("Cerrar sesión")
+                                    }
+                                }
+                            }
+
+                        } else {
+
+                            Button(
+                                onClick = { showSignInDialog = true },
+                                colors = ButtonDefaults.buttonColors(Color.Black),
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Text("Log in", color = Color.White)
+                            }
+
+                            Button(
+                                onClick = { showSignUpDialog = true },
+                                colors = ButtonDefaults.buttonColors(Color.Black)
+                            ) {
+                                Text("Sign up", color = Color.White)
+                            }
                         }
                     }
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    Text(
-                        text = "CANARY'S ESPORTS",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Yellow
-                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -208,8 +288,7 @@ class TorneoScreen : Screen {
                 onDismiss = { showSignInDialog = false },
                 onSuccess = { user ->
                     showSignInDialog = false
-                    SessionManager.authToken = user.token
-                    SessionManager.currentUser = user
+                    onLoginSuccess(user)
                 }
             )
         }
@@ -219,8 +298,7 @@ class TorneoScreen : Screen {
                 onDismiss = { showSignUpDialog = false },
                 onSignUpSuccess = { user ->
                     showSignUpDialog = false
-                    SessionManager.authToken = user.token
-                    SessionManager.currentUser = user
+                    onLoginSuccess(user)
                 }
             )
         }
