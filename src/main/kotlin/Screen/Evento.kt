@@ -124,6 +124,13 @@ class EventosScreen : Screen {
                                 ) {
                                     DropdownMenuItem(onClick = {
                                         expanded = false
+                                        navigator?.push(EditScreen())
+                                    }) {
+                                        Text("Editar perfil")
+                                    }
+
+                                    DropdownMenuItem(onClick = {
+                                        expanded = false
                                         onLogout()
                                     }) {
                                         Text("Cerrar sesión")
