@@ -77,6 +77,13 @@ class StartScreen : Screen {
                         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                             DropdownMenuItem(onClick = {
                                 expanded = false
+                                navigator?.push(EditScreen())
+                            }) {
+                                Text("Editar perfil")
+                            }
+
+                            DropdownMenuItem(onClick = {
+                                expanded = false
                                 onLogout()
                             }) {
                                 Text("Cerrar Sesión")
