@@ -41,6 +41,7 @@ class PlayerScreen : Screen {
         playerPantalla(
             usuario = usuario,
             onLoginSuccess = { user ->
+                println("Asignando token: ${user.token}")
                 // Actualizamos SessionManager aquí
                 SessionManager.authToken = user.token
                 SessionManager.currentUser = user
@@ -146,7 +147,8 @@ class PlayerScreen : Screen {
                                 ) {
                                     DropdownMenuItem(onClick = {
                                         expanded = false
-                                        navigator?.push(EditScreen())
+                                        println("Token antes de abrir EditScreen: ${SessionManager.authToken}")
+                                        navigator?.push(EditScreen(token =SessionManager.authToken ?: ""))
                                     }) {
                                         Text("Editar perfil")
                                     }
@@ -507,7 +509,7 @@ class PlayerScreen : Screen {
                         onClick = {
                             apiLogIn(
                                 email, password,
-                                onSuccessResponse = { user ->
+                                callback = { user ->
                                     onSuccess(user)
                                     onDismiss()
                                 }
