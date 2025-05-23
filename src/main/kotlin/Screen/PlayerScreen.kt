@@ -37,14 +37,33 @@ class PlayerScreen : Screen {
 
     @Composable
     override fun Content() {
+        val usuario = SessionManager.currentUser
+
+        playerPantalla(
+            usuario = usuario,
+            onLoginSuccess = { user ->
+                // Actualizamos SessionManager aquí
+                SessionManager.authToken = user.token
+                SessionManager.currentUser = user
+            },
+            onLogout = {
+                SessionManager.authToken = null
+                SessionManager.currentUser = null
+            }
+        )
+    }
+
+    @Composable
+    fun playerPantalla(
+        usuario: User?,
+        onLoginSuccess: (User) -> Unit,
+        onLogout: () -> Unit
+    ){
         val navigator = LocalNavigator.current
 
         var showSignInDialog by remember { mutableStateOf(false) }
         var showSignUpDialog by remember { mutableStateOf(false) }
         var authMessage by remember { mutableStateOf<String?>(null) }
-
-        val isLoggedIn = SessionManager.authToken != null
-        val currentUser = SessionManager.currentUser
 
         var juegos by remember { mutableStateOf<List<Juego>>(emptyList()) }
         var selectedGameIndex by remember { mutableStateOf(0) }
@@ -111,7 +130,31 @@ class PlayerScreen : Screen {
                     }
 
                     Row {
-                        if (!isLoggedIn) {
+                        if (usuario != null) {
+                            var expanded by remember { mutableStateOf(false) }
+
+                            Box {
+                                Text(
+                                    currentUser?.nombre ?: "Usuario",
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.clickable { expanded = true }
+                                )
+
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false },
+                                ) {
+                                    DropdownMenuItem(onClick = {
+                                        expanded = false
+                                        onLogout()
+                                    }) {
+                                        Text("Cerrar sesión")
+                                    }
+                                }
+                            }
+                        } else {
+
                             Button(
                                 onClick = { showSignInDialog = true },
                                 colors = ButtonDefaults.buttonColors(Color.Black),
@@ -125,30 +168,6 @@ class PlayerScreen : Screen {
                                 colors = ButtonDefaults.buttonColors(Color.Black)
                             ) {
                                 Text("Sign up", color = Color.White)
-                            }
-                        } else {
-                            var expanded by remember { mutableStateOf(false) }
-
-                            Box {
-                                Text(
-                                    "Bienvenido, ${currentUser?.nombre ?: "Usuario"}",
-                                    color = Color.Black,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.clickable { expanded = true }
-                                )
-
-                                DropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { expanded = false },
-                                ) {
-                                    DropdownMenuItem(onClick = {
-                                        SessionManager.authToken = null
-                                        SessionManager.currentUser = null
-                                        expanded = false
-                                    }) {
-                                        Text("Cerrar sesión")
-                                    }
-                                }
                             }
                         }
                     }
@@ -258,11 +277,9 @@ class PlayerScreen : Screen {
                 onDismiss = { showSignInDialog = false },
                 onSuccess = { user ->
                     showSignInDialog = false
+                    onLoginSuccess(user)
                     println("Login exitoso. Usuario: ${user.nombre}")
 
-                    // Guardar en SessionManager
-                    SessionManager.authToken = user.token
-                    SessionManager.currentUser = user
                 }
             )
         }
@@ -272,6 +289,7 @@ class PlayerScreen : Screen {
                 onDismiss = { showSignUpDialog = false },
                 onSignUpSuccess = { user ->
                     showSignUpDialog = false
+                    onLoginSuccess(user)
                     println("Registro exitoso. Usuario: ${user.nombre}")
 
                     // Guardar en SessionManager
