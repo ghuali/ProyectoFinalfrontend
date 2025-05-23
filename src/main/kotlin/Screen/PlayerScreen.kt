@@ -9,7 +9,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -145,6 +144,13 @@ class PlayerScreen : Screen {
                                     expanded = expanded,
                                     onDismissRequest = { expanded = false },
                                 ) {
+                                    DropdownMenuItem(onClick = {
+                                        expanded = false
+                                        navigator?.push(EditScreen())
+                                    }) {
+                                        Text("Editar perfil")
+                                    }
+
                                     DropdownMenuItem(onClick = {
                                         expanded = false
                                         onLogout()
