@@ -28,10 +28,11 @@ class StartScreen : Screen {
     override fun Content() {
         val usuario = SessionManager.currentUser
 
+
         PantallaInicio(
             usuario = usuario,
             onLoginSuccess = { user ->
-                // Actualizamos SessionManager aquí
+                println("Asignando token: ${user.token}")
                 SessionManager.authToken = user.token
                 SessionManager.currentUser = user
             },
@@ -76,8 +77,9 @@ class StartScreen : Screen {
                         }
                         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                             DropdownMenuItem(onClick = {
+                                println("Token antes de abrir EditScreen: ${SessionManager.authToken}")
                                 expanded = false
-                                navigator?.push(EditScreen())
+                                navigator?.push(EditScreen(token =SessionManager.authToken ?: ""))
                             }) {
                                 Text("Editar perfil")
                             }
