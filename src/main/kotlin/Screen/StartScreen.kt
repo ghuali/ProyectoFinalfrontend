@@ -1,5 +1,6 @@
 package Screen
 
+import ViewModel.SessionManager
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -25,12 +26,19 @@ import network.apiRegister
 class StartScreen : Screen {
     @Composable
     override fun Content() {
-        var usuario by remember { mutableStateOf<User?>(null) }
+        val usuario = SessionManager.currentUser
 
         PantallaInicio(
             usuario = usuario,
-            onLoginSuccess = { usuario = it },
-            onLogout = { usuario = null }
+            onLoginSuccess = { user ->
+                // Actualizamos SessionManager aquí
+                SessionManager.authToken = user.token
+                SessionManager.currentUser = user
+            },
+            onLogout = {
+                SessionManager.authToken = null
+                SessionManager.currentUser = null
+            }
         )
     }
 
@@ -41,8 +49,6 @@ class StartScreen : Screen {
         onLogout: () -> Unit
     ) {
         val navigator = LocalNavigator.current
-
-        val token = usuario?.token
         var showLoginDialog by remember { mutableStateOf(false) }
         var showSignUpDialog by remember { mutableStateOf(false) }
 
@@ -56,29 +62,46 @@ class StartScreen : Screen {
                 )
                 .padding(16.dp)
         ) {
-            // Encabezado con usuario y cerrar sesión
-            if (usuario != null) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Bienvenido, ${usuario.nombre} 👋",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    Button(
-                        onClick = onLogout,
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
-                    ) {
-                        Text("Cerrar Sesión", color = Color.White)
+            // Encabezado usuario o botones
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (usuario != null) {
+                    var expanded by remember { mutableStateOf(false) }
+                    Box {
+                        TextButton(onClick = { expanded = true }) {
+                            Text(usuario.nombre, color = Color.White, fontWeight = FontWeight.Bold)
+                        }
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            DropdownMenuItem(onClick = {
+                                expanded = false
+                                onLogout()
+                            }) {
+                                Text("Cerrar Sesión")
+                            }
+                        }
+                    }
+                } else {
+                    Row {
+                        Button(
+                            onClick = { showLoginDialog = true },
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Text("Login", color = Color.Black)
+                        }
+                        Button(
+                            onClick = { showSignUpDialog = true },
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+                        ) {
+                            Text("Sign Up", color = Color.Black)
+                        }
                     }
                 }
             }
+
 
             val painter = painterResource("CanaryEsportsImg.png")
 
@@ -158,35 +181,6 @@ class StartScreen : Screen {
                         ) {
                             Text("Torneo", fontSize = 16.sp, color = Color.Black)
                         }
-
-                        Divider(color = Color.Gray, thickness = 1.dp, modifier = Modifier.padding(vertical = 12.dp))
-
-                        if (usuario == null) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceEvenly
-                            ) {
-                                Button(
-                                    onClick = { showLoginDialog = true },
-                                    colors = ButtonDefaults.buttonColors(Color.White),
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .padding(end = 4.dp)
-                                ) {
-                                    Text("Login", color = Color.Black)
-                                }
-
-                                Button(
-                                    onClick = { showSignUpDialog = true },
-                                    colors = ButtonDefaults.buttonColors(Color.White),
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .padding(start = 4.dp)
-                                ) {
-                                    Text("Sign Up", color = Color.Black)
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -195,14 +189,20 @@ class StartScreen : Screen {
         if (showLoginDialog) {
             LoginDialog(
                 onDismiss = { showLoginDialog = false },
-                onLoginSuccess = onLoginSuccess
+                onLoginSuccess = { user ->
+                    onLoginSuccess(user)
+                    showLoginDialog = false
+                }
             )
         }
 
         if (showSignUpDialog) {
             SignUpDialog(
                 onDismiss = { showSignUpDialog = false },
-                onSignUpSuccess = onLoginSuccess
+                onSignUpSuccess = { user ->
+                    onLoginSuccess(user)
+                    showSignUpDialog = false
+                }
             )
         }
     }
@@ -214,12 +214,12 @@ class StartScreen : Screen {
     ) {
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
+        var isLoading by remember { mutableStateOf(false) }
+        var errorMessage by remember { mutableStateOf<String?>(null) }
 
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = {
-                Text("Iniciar Sesión", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            },
+            title = { Text("Iniciar Sesión", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
             text = {
                 Column {
                     OutlinedTextField(
@@ -233,18 +233,26 @@ class StartScreen : Screen {
                         value = password,
                         onValueChange = { password = it },
                         label = { Text("Contraseña") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
+                    errorMessage?.let {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(text = it, color = Color.Red)
+                    }
                 }
             },
             confirmButton = {
-                Button(onClick = {
-                    apiLogIn(email, password) { user ->
-                        onLoginSuccess(user)
-                    }
-                    onDismiss()
-                }) {
-                    Text("Aceptar")
+                Button(
+                    onClick = {
+                        isLoading = true
+                        apiLogIn(email, password) { userOrNull ->
+                            isLoading = false
+                            onLoginSuccess(userOrNull)
+                        }
+                    },
+                    enabled = !isLoading
+                ) {
+                    Text(if (isLoading) "Cargando..." else "Aceptar")
                 }
             },
             dismissButton = {
@@ -265,12 +273,12 @@ class StartScreen : Screen {
         var nombre by remember { mutableStateOf("") }
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
+        var isLoading by remember { mutableStateOf(false) }
+        var errorMessage by remember { mutableStateOf<String?>(null) }
 
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = {
-                Text("Registrarse", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            },
+            title = { Text("Registrarse", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
             text = {
                 Column {
                     OutlinedTextField(
@@ -291,18 +299,26 @@ class StartScreen : Screen {
                         value = password,
                         onValueChange = { password = it },
                         label = { Text("Contraseña") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
+                    errorMessage?.let {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(text = it, color = Color.Red)
+                    }
                 }
             },
             confirmButton = {
-                Button(onClick = {
-                    apiRegister(nombre, email, password) { user ->
-                        onSignUpSuccess(user)
-                    }
-                    onDismiss()
-                }) {
-                    Text("Registrarse")
+                Button(
+                    onClick = {
+                        isLoading = true
+                        apiRegister(nombre, email, password) { userOrNull ->
+                            isLoading = false
+                            onSignUpSuccess(userOrNull)
+                        }
+                    },
+                    enabled = !isLoading
+                ) {
+                    Text(if (isLoading) "Cargando..." else "Registrarse")
                 }
             },
             dismissButton = {

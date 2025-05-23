@@ -1,6 +1,7 @@
 package Screen
 
 import ViewModel.SessionManager
+import ViewModel.SessionManager.currentUser
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -8,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -40,9 +42,10 @@ class PlayerScreen : Screen {
         var showSignInDialog by remember { mutableStateOf(false) }
         var showSignUpDialog by remember { mutableStateOf(false) }
         var authMessage by remember { mutableStateOf<String?>(null) }
-        var loggedUser by remember { mutableStateOf<User?>(null) }
 
-        var authToken by remember { mutableStateOf<String?>(null) }
+        val isLoggedIn = SessionManager.authToken != null
+        val currentUser = SessionManager.currentUser
+
         var juegos by remember { mutableStateOf<List<Juego>>(emptyList()) }
         var selectedGameIndex by remember { mutableStateOf(0) }
         val selectedGame = juegos.getOrNull(selectedGameIndex)
@@ -108,23 +111,50 @@ class PlayerScreen : Screen {
                     }
 
                     Row {
-                        Button(
-                            onClick = { showSignInDialog = true },
-                            colors = ButtonDefaults.buttonColors(Color.Black),
-                            modifier = Modifier.padding(end = 8.dp)
-                        ) {
-                            Text("Log in", color = Color.White)
-                        }
+                        if (!isLoggedIn) {
+                            Button(
+                                onClick = { showSignInDialog = true },
+                                colors = ButtonDefaults.buttonColors(Color.Black),
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Text("Log in", color = Color.White)
+                            }
 
-                        Button(
-                            onClick = { showSignUpDialog = true },
-                            colors = ButtonDefaults.buttonColors(Color.Black)
-                        ) {
-                            Text("Sign up", color = Color.White)
+                            Button(
+                                onClick = { showSignUpDialog = true },
+                                colors = ButtonDefaults.buttonColors(Color.Black)
+                            ) {
+                                Text("Sign up", color = Color.White)
+                            }
+                        } else {
+                            var expanded by remember { mutableStateOf(false) }
+
+                            Box {
+                                Text(
+                                    "Bienvenido, ${currentUser?.nombre ?: "Usuario"}",
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.clickable { expanded = true }
+                                )
+
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false },
+                                ) {
+                                    DropdownMenuItem(onClick = {
+                                        SessionManager.authToken = null
+                                        SessionManager.currentUser = null
+                                        expanded = false
+                                    }) {
+                                        Text("Cerrar sesión")
+                                    }
+                                }
+                            }
                         }
                     }
                 }
 
+                // Selector de juegos
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -160,7 +190,7 @@ class PlayerScreen : Screen {
                     }
                 }
 
-// Título de juego
+                // Nombre del juego
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -197,7 +227,6 @@ class PlayerScreen : Screen {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Mensaje de autenticación
                 authMessage?.let {
                     Text(
                         text = it,
@@ -229,11 +258,11 @@ class PlayerScreen : Screen {
                 onDismiss = { showSignInDialog = false },
                 onSuccess = { user ->
                     showSignInDialog = false
-                    SessionManager.authToken = user.token  // Asumiendo que User tiene token
-                    SessionManager.currentUser = user
                     println("Login exitoso. Usuario: ${user.nombre}")
-                    loggedUser = user
-                    authToken = user.token
+
+                    // Guardar en SessionManager
+                    SessionManager.authToken = user.token
+                    SessionManager.currentUser = user
                 }
             )
         }
@@ -243,13 +272,14 @@ class PlayerScreen : Screen {
                 onDismiss = { showSignUpDialog = false },
                 onSignUpSuccess = { user ->
                     showSignUpDialog = false
+                    println("Registro exitoso. Usuario: ${user.nombre}")
+
+                    // Guardar en SessionManager
                     SessionManager.authToken = user.token
                     SessionManager.currentUser = user
-                    println("Registro exitoso. Usuario: ${user.nombre}")
-                    loggedUser = user
-                    authToken = user.token
                 }
             )
+
         }
     }
 

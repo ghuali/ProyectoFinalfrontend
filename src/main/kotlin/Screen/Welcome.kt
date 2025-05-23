@@ -43,6 +43,11 @@ class WelcomeScreen : Screen {
         var showSignInDialog by remember { mutableStateOf(false) }
         var showSignUpDialog by remember { mutableStateOf(false) }
 
+        val authToken by remember { derivedStateOf { SessionManager.authToken } }
+        val currentUser = SessionManager.currentUser
+        val isLoggedIn = SessionManager.authToken != null
+
+
         var juegos by remember { mutableStateOf<List<Juego>>(emptyList()) }
         var selectedGameIndex by remember { mutableStateOf(0) }
         var equipos by remember { mutableStateOf<List<EquipoResumen>>(emptyList()) }
@@ -107,21 +112,46 @@ class WelcomeScreen : Screen {
                             color = Color.Black
                         )
                     }
-
                     Row {
-                        Button(
-                            onClick = { showSignInDialog = true },
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black),
-                            modifier = Modifier.padding(end = 8.dp)
-                        ) {
-                            Text("Log in", color = Color.White)
-                        }
+                        if (!isLoggedIn) {
+                            Button(
+                                onClick = { showSignInDialog = true },
+                                colors = ButtonDefaults.buttonColors(Color.Black),
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Text("Log in", color = Color.White)
+                            }
 
-                        Button(
-                            onClick = { showSignUpDialog = true },
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black)
-                        ) {
-                            Text("Sign up", color = Color.White)
+                            Button(
+                                onClick = { showSignUpDialog = true },
+                                colors = ButtonDefaults.buttonColors(Color.Black)
+                            ) {
+                                Text("Sign up", color = Color.White)
+                            }
+                        } else {
+                            var expanded by remember { mutableStateOf(false) }
+
+                            Box {
+                                Text(
+                                    "Bienvenido, ${currentUser?.nombre ?: "Usuario"}",
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.clickable { expanded = true }
+                                )
+
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false },
+                                ) {
+                                    DropdownMenuItem(onClick = {
+                                        SessionManager.authToken = null
+                                        SessionManager.currentUser = null
+                                        expanded = false
+                                    }) {
+                                        Text("Cerrar sesión")
+                                    }
+                                }
+                            }
                         }
                     }
                 }
