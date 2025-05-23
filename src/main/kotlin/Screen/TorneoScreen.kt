@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.Dialog
+import apiEntrarTorneoJugadorIndividual
+import apiSalirTorneoJugadorIndividual
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import model.Clasificacion
@@ -166,6 +168,49 @@ class TorneoScreen : Screen {
                         // Mostrar Clasificación
                         Text("Clasificación - ${torneoSeleccionado!!.nombre}", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         Spacer(modifier = Modifier.height(12.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            Button(
+                                onClick = {
+                                    if (usuario != null) {
+                                        apiEntrarTorneoJugadorIndividual(
+                                            torneoId = torneoSeleccionado!!.id_torneo,
+                                            token = SessionManager.authToken ?: "",
+                                            onSuccess = {
+                                                getClasificacionPorTorneo(torneoSeleccionado!!.id_torneo) {
+                                                    clasificacion = it
+                                                }
+                                            },
+                                            onError = {   /* Mostrar error */ }
+                                        )
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green)
+                            ) {
+                                Text("Entrar", color = Color.White)
+                            }
+
+                            Button(
+                                onClick = {
+                                    if (usuario != null) {
+                                        apiSalirTorneoJugadorIndividual(
+                                            torneoId = torneoSeleccionado!!.id_torneo,
+                                            token = SessionManager.authToken ?: "",
+                                            onSuccess = { getClasificacionPorTorneo(torneoSeleccionado!!.id_torneo) {
+                                                clasificacion = it
+                                            } },
+                                            onError = { error -> /* Mostrar error */ }
+                                        )
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
+                            ) {
+                                Text("Salir", color = Color.White)
+                            }
+                        }
 
                         if (clasificacion.isEmpty()) {
                             Text("Cargando clasificación...", color = Color.LightGray)
