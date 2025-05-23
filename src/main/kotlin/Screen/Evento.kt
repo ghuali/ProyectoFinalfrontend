@@ -124,7 +124,7 @@ class EventosScreen : Screen {
                                 ) {
                                     DropdownMenuItem(onClick = {
                                         expanded = false
-                                        navigator?.push(EditScreen())
+                                        navigator?.push(EditScreen(token =SessionManager.authToken ?: ""))
                                     }) {
                                         Text("Editar perfil")
                                     }
@@ -380,7 +380,7 @@ class EventosScreen : Screen {
                         onClick = {
                             apiLogIn(
                                 email, password,
-                                onSuccessResponse = { user ->
+                                callback = { user ->
                                     onSuccess(user)
                                     onDismiss()
                                 }
