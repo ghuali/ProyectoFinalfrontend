@@ -17,6 +17,50 @@ import model.LoginRequest
 import model.LoginResponse
 import model.User
 
+fun apiGetPerfil(
+    token: String,
+    onSuccess: (User) -> Unit,
+    onError: (String) -> Unit
+) {
+    val url = "http://localhost:5000/usuario/perfil"
+
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val response: HttpResponse = NetworkUtils.httpClient.get(url) {
+                headers {
+                    append("Authorization", "Bearer $token")
+                }
+            }
+
+            val text = response.bodyAsText()
+            println("Respuesta perfil cruda: $text")
+
+            val jsonElement = Json.parseToJsonElement(text).jsonObject
+
+            if ("error" in jsonElement) {
+                val errorMessage = jsonElement["error"]?.jsonPrimitive?.content ?: "Error desconocido"
+                withContext(Dispatchers.Main) {
+                    onError(errorMessage)
+                }
+            } else {
+                // Aquí parseamos el JSON completo como User
+                // Si el JSON viene sin token, pero User espera token opcional = null, no hay problema
+                val user = Json.decodeFromJsonElement(User.serializer(), jsonElement)
+
+                withContext(Dispatchers.Main) {
+                    onSuccess(user)
+                }
+            }
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            withContext(Dispatchers.Main) {
+                onError("Error de conexión: ${e.message}")
+            }
+        }
+    }
+}
+
 fun apiLogIn(
     email: String,
     password: String,
