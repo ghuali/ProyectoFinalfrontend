@@ -153,7 +153,7 @@ class WelcomeScreen : Screen {
                                     DropdownMenuItem(onClick = {
                                         expanded = false
                                         println("Token antes de abrir EditScreen: ${SessionManager.authToken}")
-                                        navigator?.push(EditScreen(token =SessionManager.authToken ?: ""))
+                                        navigator?.push(EditScreen())
                                     }) {
                                         Text("Editar perfil")
                                     }
