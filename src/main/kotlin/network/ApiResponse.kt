@@ -76,15 +76,15 @@ fun apiRegister(nombre: String, email: String, password: String, onSuccessRespon
 fun apiEditUser(
     idUsuario: Int,
     nombre: String? = null,
-    correo: String? = null,
+    email: String? = null,
     password: String? = null,
     token: String,
     onSuccessResponse: (User) -> Unit,
     onError: (String) -> Unit = {}
 ) {
-    val url = "http://127.0.0.1:5000/usuarios/$idUsuario"
+    val url = "http://127.0.0.1:5000/usuarios/editar/$idUsuario"
 
-    val requestBody = EditUserRequest(nombre, correo, password)
+    val requestBody = EditUserRequest(nombre, email, password)
 
     CoroutineScope(Dispatchers.IO).launch {
         try {
