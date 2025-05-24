@@ -19,3 +19,15 @@ data class EquipoResumen(
     val derrotas: Int
 )
 
+@Serializable
+data class EquipoConCodigo(
+    val id_equipo: Int,
+    val nombre: String,
+    val fundador: Int,
+    val fecha_creacion: String,
+    val codigo: String,
+    val victorias: Int,
+    val derrotas: Int
+)
+
+
