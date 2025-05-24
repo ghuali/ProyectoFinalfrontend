@@ -20,7 +20,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import model.User
 import network.*
 
-class EditScreen(private val token: String): Screen{
+class EditScreen(): Screen{
 
     @Composable
     override fun Content(){
@@ -106,11 +106,14 @@ class EditScreen(private val token: String): Screen{
                 }
                 Spacer(modifier = Modifier.height(12.dp))
 
-                usuario?.id?.let { id ->
-                    EditBloque(idUsuario = id, onUserUpdated = { updatedUser ->
-                        SessionManager.currentUser = updatedUser
-                        println("Usuario actualizado: $updatedUser")
-                    })
+                usuario?.let { user ->
+                    EditBloque(
+                        usuario = user,
+                        onUserUpdated = { updatedUser ->
+                            SessionManager.currentUser = updatedUser
+                            println("Usuario actualizado: $updatedUser")
+                        }
+                    )
                 }
             }
             Button(
@@ -126,9 +129,9 @@ class EditScreen(private val token: String): Screen{
     }
 
     @Composable
-    fun EditBloque(idUsuario: Int, onUserUpdated: (User) -> Unit) {
-        var nombre by remember { mutableStateOf("") }
-        var email by remember { mutableStateOf("") }
+    fun EditBloque(usuario: User, onUserUpdated: (User) -> Unit) {
+        var nombre by remember { mutableStateOf(usuario.nombre) }
+        var email by remember { mutableStateOf(usuario.email) }
         var password by remember { mutableStateOf("") }
         var errorMessage by remember { mutableStateOf<String?>(null) }
         var showDialog by remember { mutableStateOf(false) }
@@ -175,7 +178,7 @@ class EditScreen(private val token: String): Screen{
                 TextField(
                     value = password,
                     onValueChange = { password = it },
-                    placeholder = { Text("Introducir Contraseña") },
+                    placeholder = { Text("Nueva Contraseña (opcional)") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
@@ -225,7 +228,7 @@ class EditScreen(private val token: String): Screen{
                                 }
 
                                 apiEditUser(
-                                    idUsuario = idUsuario,
+                                    idUsuario = usuario.id,
                                     nombre = nombre.takeIf { it.isNotBlank() },
                                     email = email.takeIf { it.isNotBlank() },
                                     password = password.takeIf { it.isNotBlank() },
