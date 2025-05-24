@@ -148,6 +148,13 @@ class TorneoScreen : Screen {
 
                                     DropdownMenuItem(onClick = {
                                         expanded = false
+                                        navigator?.push(EquipoScreen())
+                                    }) {
+                                        Text("Equipo")
+                                    }
+
+                                    DropdownMenuItem(onClick = {
+                                        expanded = false
                                         onLogout()
                                     }) {
                                         Text("Cerrar sesión")
