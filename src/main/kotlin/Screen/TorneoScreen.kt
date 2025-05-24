@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
@@ -30,6 +31,7 @@ import kotlinx.coroutines.delay
 import model.Clasificacion
 import model.Evento
 import model.Torneo
+import model.TorneoCompleto
 import model.User
 import network.*
 import utils.LoginDialog
@@ -63,11 +65,11 @@ class TorneoScreen : Screen {
         val navigator = LocalNavigator.current
 
         var eventos by remember { mutableStateOf<List<Evento>>(emptyList()) }
-        var torneos by remember { mutableStateOf<List<Torneo>>(emptyList()) }
+        var torneos by remember { mutableStateOf<List<TorneoCompleto>>(emptyList()) }
         var clasificacion by remember { mutableStateOf<List<Clasificacion>>(emptyList()) }
 
         var eventoSeleccionado by remember { mutableStateOf<Evento?>(null) }
-        var torneoSeleccionado by remember { mutableStateOf<Torneo?>(null) }
+        var torneoSeleccionado by remember { mutableStateOf<TorneoCompleto?>(null) }
 
         var showSignInDialog by remember { mutableStateOf(false) }
         var showSignUpDialog by remember { mutableStateOf(false) }
@@ -225,7 +227,12 @@ class TorneoScreen : Screen {
                         }
 
                         if (clasificacion.isEmpty()) {
-                            Text("Cargando clasificación...", color = Color.LightGray)
+                            Text(
+                                text = "No hay jugadores en la clasificación para este torneo.",
+                                color = Color.LightGray,
+                                fontStyle = FontStyle.Italic,
+                                modifier = Modifier.padding(16.dp)
+                            )
                         } else {
                             LazyColumn {
                                 items(clasificacion) { c ->
@@ -305,10 +312,7 @@ class TorneoScreen : Screen {
                                             .clickable {
                                                 eventoSeleccionado = evento
                                                 torneos = emptyList()
-                                                // Carga torneos filtrados por evento, para eso necesitamos el id_juego
-                                                // Aquí asumimos que el evento tiene un id_juego, o podemos hacer una llamada separada
-                                                // Para simplificar, usaremos el id_juego 1 (puedes adaptar esto)
-                                                getTorneosPorJuego(evento.id_evento) { torneosResponse ->
+                                                getTorneosPorEvento(evento.id_evento) { torneosResponse ->
                                                     // Filtrar torneos que pertenezcan al evento seleccionado
                                                     torneos = torneosResponse.filter { it.id_evento == evento.id_evento }
                                                 }
