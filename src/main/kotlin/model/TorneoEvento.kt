@@ -33,6 +33,16 @@ data class TorneoCreateRequest(
     val id_juego: Int
 )
 
+@Serializable
+data class TorneoCompleto(
+    val id_torneo: Int,
+    val nombre: String,
+    val fecha_inicio: String,
+    val fecha_fin: String,
+    val ubicacion: String,
+    val id_evento: Int? = null,
+    val nombre_evento: String? = null
+)
 
 @Serializable
 data class Clasificacion(
