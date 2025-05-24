@@ -70,6 +70,7 @@ class EquipoScreen: Screen {
             onLogout = {
                 SessionManager.authToken = null
                 SessionManager.currentUser = null
+                SessionManager.clearSession()
             }
         )
     }
