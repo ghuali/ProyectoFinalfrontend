@@ -26,6 +26,7 @@ import apiEntrarTorneoJugadorIndividual
 import apiSalirTorneoJugadorIndividual
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import kotlinx.coroutines.delay
 import model.Clasificacion
 import model.Evento
 import model.Torneo
@@ -72,6 +73,15 @@ class TorneoScreen : Screen {
         // Cargar eventos al iniciar
         LaunchedEffect(Unit) {
             getEventos { eventos = it }
+        }
+
+        LaunchedEffect(torneoSeleccionado) {
+            while (torneoSeleccionado != null) {
+                getClasificacionPorTorneo(torneoSeleccionado!!.id_torneo) {
+                    clasificacion = it
+                }
+                delay(5000) // Actualiza cada 5 segundos (ajusta según necesidad)
+            }
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -296,9 +306,9 @@ class TorneoScreen : Screen {
                                                 // Carga torneos filtrados por evento, para eso necesitamos el id_juego
                                                 // Aquí asumimos que el evento tiene un id_juego, o podemos hacer una llamada separada
                                                 // Para simplificar, usaremos el id_juego 1 (puedes adaptar esto)
-                                                getTorneosPorJuego(evento.idEvento) { torneosResponse ->
+                                                getTorneosPorJuego(evento.id_evento) { torneosResponse ->
                                                     // Filtrar torneos que pertenezcan al evento seleccionado
-                                                    torneos = torneosResponse.filter { it.id_evento == evento.idEvento }
+                                                    torneos = torneosResponse.filter { it.id_evento == evento.id_evento }
                                                 }
                                             }
                                             .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
@@ -306,7 +316,7 @@ class TorneoScreen : Screen {
                                         Column(modifier = Modifier.padding(16.dp)) {
                                             Text(evento.nombre, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Yellow)
                                             Text("Tipo: ${evento.tipo}", fontSize = 14.sp, color = Color.White)
-                                            Text("Año: ${evento.anio}", fontSize = 14.sp, color = Color.White)
+                                            Text("Año: ${evento.año}", fontSize = 14.sp, color = Color.White)
                                         }
                                     }
                                 }
