@@ -126,7 +126,7 @@ class EventosScreen : Screen {
                                 ) {
                                     DropdownMenuItem(onClick = {
                                         expanded = false
-                                        navigator?.push(EditScreen(token =SessionManager.authToken ?: ""))
+                                        navigator?.push(EditScreen())
                                     }) {
                                         Text("Editar perfil")
                                     }
