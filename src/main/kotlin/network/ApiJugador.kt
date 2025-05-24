@@ -27,3 +27,43 @@ fun getJugadoresPorJuego(idJuego: Int, onSuccessResponse: (List<JugadorResumen>)
         }
     }
 }
+
+fun unirseJuegoIndividual(idJuego: Int, token: String, onSuccessResponse: () -> Unit) {
+    val url = "http://127.0.0.1:5000/unirse/juego-individual"
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val response = httpClient.post(url) {
+                header("Authorization", "Bearer $token")
+                contentType(ContentType.Application.Json)
+                setBody(mapOf("id_juego" to idJuego))
+            }
+            if (response.status == HttpStatusCode.Created) {
+                onSuccessResponse()
+            } else {
+                println("Error: ${response.status}, Body: ${response.bodyAsText()}")
+            }
+        } catch (e: Exception) {
+            println("Exception: ${e.message}")
+        }
+    }
+}
+
+fun salirJuegoIndividual(idJuego: Int, token: String, onSuccessResponse: () -> Unit) {
+    val url = "http://127.0.0.1:5000/salir/juego-individual"
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val response = httpClient.post(url) {
+                header("Authorization", "Bearer $token")
+                contentType(ContentType.Application.Json)
+                setBody(mapOf("id_juego" to idJuego))
+            }
+            if (response.status == HttpStatusCode.OK) {
+                onSuccessResponse()
+            } else {
+                println("Error: ${response.status}, Body: ${response.bodyAsText()}")
+            }
+        } catch (e: Exception) {
+            println("Exception: ${e.message}")
+        }
+    }
+}
