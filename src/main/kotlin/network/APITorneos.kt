@@ -6,6 +6,7 @@ import io.ktor.client.call.*
 import io.ktor.client.statement.*
 import io.ktor.client.request.*
 import io.ktor.http.*
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import model.UsuarioTorneoRequest
 import model.MensajeResponse
@@ -17,16 +18,18 @@ fun apiEntrarTorneoJugadorIndividual(
     onSuccess: (String) -> Unit,
     onError: (String) -> Unit = {}
 ) {
-    val url = "http://127.0.0.1:5000/torneo/$torneoId/unirse"
+    val url = "http://127.0.0.1:5000/inscribir/jugador"
 
     CoroutineScope(Dispatchers.IO).launch {
         try {
+            val jsonBody = Json.encodeToString(mapOf("id_torneo" to torneoId))
+
             val response: HttpResponse = httpClient.post(url) {
                 contentType(ContentType.Application.Json)
                 headers {
                     append("Authorization", "Bearer $token")
                 }
-                // Si el backend no necesita body, puedes omitir setBody
+                setBody(jsonBody)
             }
 
             val text = response.bodyAsText()
