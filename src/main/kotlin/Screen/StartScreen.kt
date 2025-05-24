@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import model.User
-import network.apiLogIn
-import network.apiRegister
+import utils.LoginDialog
+import utils.RegisterDialog
 
 class StartScreen : Screen {
     @Composable
@@ -206,7 +206,7 @@ class StartScreen : Screen {
         }
 
         if (showSignUpDialog) {
-            SignUpDialog(
+            RegisterDialog(
                 onDismiss = { showSignUpDialog = false },
                 onSignUpSuccess = { user ->
                     onLoginSuccess(user)
@@ -216,127 +216,5 @@ class StartScreen : Screen {
         }
     }
 
-    @Composable
-    fun LoginDialog(
-        onDismiss: () -> Unit,
-        onLoginSuccess: (User) -> Unit
-    ) {
-        var email by remember { mutableStateOf("") }
-        var password by remember { mutableStateOf("") }
-        var isLoading by remember { mutableStateOf(false) }
-        val errorMessage by remember { mutableStateOf<String?>(null) }
 
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            title = { Text("Iniciar Sesión", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
-            text = {
-                Column {
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = { Text("Email") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = { Text("Contraseña") },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    errorMessage?.let {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = it, color = Color.Red)
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        isLoading = true
-                        apiLogIn(email, password) { userOrNull ->
-                            isLoading = false
-                            onLoginSuccess(userOrNull)
-                        }
-                    },
-                    enabled = !isLoading
-                ) {
-                    Text(if (isLoading) "Cargando..." else "Aceptar")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onDismiss) {
-                    Text("Cancelar")
-                }
-            },
-            backgroundColor = Color.White,
-            contentColor = Color.Black
-        )
-    }
-
-    @Composable
-    fun SignUpDialog(
-        onDismiss: () -> Unit,
-        onSignUpSuccess: (User) -> Unit
-    ) {
-        var nombre by remember { mutableStateOf("") }
-        var email by remember { mutableStateOf("") }
-        var password by remember { mutableStateOf("") }
-        var isLoading by remember { mutableStateOf(false) }
-        val errorMessage by remember { mutableStateOf<String?>(null) }
-
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            title = { Text("Registrarse", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
-            text = {
-                Column {
-                    OutlinedTextField(
-                        value = nombre,
-                        onValueChange = { nombre = it },
-                        label = { Text("Nombre") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = { Text("Email") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = { Text("Contraseña") },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    errorMessage?.let {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = it, color = Color.Red)
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        isLoading = true
-                        apiRegister(nombre, email, password) { userOrNull ->
-                            isLoading = false
-                            onSignUpSuccess(userOrNull)
-                        }
-                    },
-                    enabled = !isLoading
-                ) {
-                    Text(if (isLoading) "Cargando..." else "Registrarse")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onDismiss) {
-                    Text("Cancelar")
-                }
-            },
-            backgroundColor = Color.White,
-            contentColor = Color.Black
-        )
-    }
 }
