@@ -4,7 +4,15 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class JugadorResumen(
-    val nombre: String = "",
-    val victorias: Int = 0,
-    val derrotas: Int = 0
+    val id_usuario: Int,
+    val nombre: String,
+    val victorias: Int? = null,
+    val derrotas: Int? = null
+)
+
+@Serializable
+data class JugadorTabla(
+    val nombre: String,
+    val victorias: Int,
+    val derrotas: Int
 )
