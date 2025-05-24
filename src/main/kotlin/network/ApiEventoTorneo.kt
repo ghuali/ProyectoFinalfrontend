@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import model.Clasificacion
 import model.Evento
 import model.Torneo
+import model.TorneoCompleto
 import network.NetworkUtils.httpClient
 
 
@@ -34,15 +35,35 @@ fun getEventos(onSuccessResponse: (List<Evento>) -> Unit) {
 }
 
 
-fun getTorneosPorJuego(juegoId: Int, onSuccessResponse: (List<Torneo>) -> Unit) {
-    val url = "http://127.0.0.1:5000/torneos/por-juego/$juegoId"
+fun getTorneosPorJuego(juegoId: Int, onSuccessResponse: (List<TorneoCompleto>) -> Unit) {
+    val url = "http://127.0.0.1:5000/torneos/completos/$juegoId"
     CoroutineScope(Dispatchers.IO).launch {
         try {
             val response = httpClient.get(url)
             val responseBody = response.bodyAsText()
             if (response.status == HttpStatusCode.OK) {
-                val torneos = response.body<List<Torneo>>()
+                val torneos = response.body<List<TorneoCompleto>>()
                 onSuccessResponse(torneos)
+            } else {
+                println("Error: ${response.status}, Body: $responseBody")
+            }
+        } catch (e: Exception) {
+            println("Exception: ${e.message}")
+        }
+    }
+}
+
+fun getTorneosPorEvento(eventoId: Int, onSuccessResponse: (List<TorneoCompleto>) -> Unit) {
+    val url = "http://127.0.0.1:5000/torneos/evento/$eventoId"
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val response = httpClient.get(url)
+            val responseBody = response.bodyAsText()
+            if (response.status == HttpStatusCode.OK) {
+                val torneos = response.body<List<TorneoCompleto>>()
+                withContext(Dispatchers.Main) {
+                    onSuccessResponse(torneos)
+                }
             } else {
                 println("Error: ${response.status}, Body: $responseBody")
             }
