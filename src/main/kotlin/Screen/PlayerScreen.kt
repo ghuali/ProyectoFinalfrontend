@@ -24,6 +24,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import model.Juego
 import model.JugadorResumen
 import model.JugadorTabla
@@ -32,6 +36,8 @@ import network.apiLogIn
 import network.apiRegister
 import network.getJuegosIndividuales
 import network.getJugadoresPorJuego
+import network.salirJuegoIndividual
+import network.unirseJuegoIndividual
 
 class PlayerScreen : Screen {
 
@@ -95,6 +101,8 @@ class PlayerScreen : Screen {
                 }
             }
         }
+
+
 
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -218,19 +226,77 @@ class PlayerScreen : Screen {
                     }
                 }
 
-                // Nombre del juego
-                Box(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 16.dp),
-                    contentAlignment = Alignment.Center
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    // Título del juego a la izquierda
                     Text(
                         text = selectedGame?.nombre ?: "",
                         fontSize = 36.sp,
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
+
+                    // Botones a la derecha
+                    Row {
+                        Button(
+                            onClick = {
+                                selectedGame?.id_juego?.let { idJuego ->
+                                    val token = SessionManager.authToken
+                                    if (token != null) {
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            try {
+                                                unirseJuegoIndividual(idJuego, token) {
+                                                    println("Te has unido al juego individual")
+                                                    getJugadoresPorJuego(idJuego) { jugadores ->
+                                                        jugadoresPorJuego = mapOf(idJuego to jugadores)
+                                                    }
+                                                }
+                                            } catch (e: Exception) {
+                                                println("Error al unirse: ${e.message}")
+                                            }
+                                        }
+                                    } else {
+                                        println("No hay token, usuario no autenticado")
+                                    }
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green),
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Text("Unirse")
+                        }
+                        Button(
+                            onClick = {
+                                selectedGame?.id_juego?.let { idJuego ->
+                                    val token = SessionManager.authToken
+                                    if (token != null) {
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            try {
+                                                salirJuegoIndividual(idJuego, token) {
+                                                    println("Has salido del juego individual")
+                                                    getJugadoresPorJuego(idJuego) { jugadores ->
+                                                        jugadoresPorJuego = mapOf(idJuego to jugadores)
+                                                    }
+                                                }
+                                            } catch (e: Exception) {
+                                                println("Error al salir: ${e.message}")
+                                            }
+                                        }
+                                    } else {
+                                        println("No hay token, usuario no autenticado")
+                                    }
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
+                        ) {
+                            Text("Salir")
+                        }
+                    }
                 }
 
                 // Encabezado tabla
