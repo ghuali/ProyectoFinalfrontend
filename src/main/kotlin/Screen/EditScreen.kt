@@ -32,6 +32,7 @@ class EditScreen(): Screen{
             onLogout = {
                 SessionManager.authToken = null
                 SessionManager.currentUser = null
+                SessionManager.clearSession()
             }
         )
     }
