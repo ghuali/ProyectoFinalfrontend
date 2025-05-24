@@ -11,6 +11,8 @@ import kotlinx.coroutines.launch
 import model.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import model.LoginRequest
 import model.LoginResponse
 import model.User
@@ -18,7 +20,8 @@ import model.User
 fun apiLogIn(
     email: String,
     password: String,
-    callback: (User) -> Unit
+    onSuccess: (User) -> Unit,
+    onError: (String) -> Unit
 ) {
     val url = "http://localhost:5000/usuario/login"
     val requestBody = LoginRequest(email, password)
@@ -33,18 +36,27 @@ fun apiLogIn(
             val text = response.bodyAsText()
             println("Texto crudo: $text")
 
-            val loginResponse = Json.decodeFromString(LoginResponse.serializer(), text)
+            // Intenta parsear como JSON genérico primero
+            val jsonElement = Json.parseToJsonElement(text).jsonObject
 
-            // Agregamos el token al User antes de enviarlo al callback
-            val userWithToken = loginResponse.usuario.copy(token = loginResponse.token)
+            if ("error" in jsonElement) {
+                val errorMessage = jsonElement["error"]?.jsonPrimitive?.content ?: "Error desconocido"
+                withContext(Dispatchers.Main) {
+                    onError(errorMessage)
+                }
+            } else {
+                val loginResponse = Json.decodeFromJsonElement(LoginResponse.serializer(), jsonElement)
+                val userWithToken = loginResponse.usuario.copy(token = loginResponse.token)
 
-            withContext(Dispatchers.Main) {
-                callback(userWithToken)
+                withContext(Dispatchers.Main) {
+                    onSuccess(userWithToken)
+                }
             }
+
         } catch (e: Exception) {
             e.printStackTrace()
             withContext(Dispatchers.Main) {
-                callback(User(0, "Error", "usuario", email, null))
+                onError("Error de conexión: ${e.message}")
             }
         }
     }
