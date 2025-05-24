@@ -4,13 +4,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Equipo(
+    val id_equipo: Int,
     val nombre: String,
-    val victorias: Int = 0,
-    val derrotas: Int = 0,
-    val idEquipo: Int = 0,
-    val fundador: String = "",
-    val fechaCreacion: String = "",
-    val codigo: String = ""
+    val victorias: Int? = null,
+    val derrotas: Int? = null,
+    val fundador: Int? = null,
+    val fecha_creacion: String? = null
 )
 
 @Serializable
