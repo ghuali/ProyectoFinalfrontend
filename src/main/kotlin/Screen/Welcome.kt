@@ -49,10 +49,12 @@ class WelcomeScreen : Screen {
                 // Actualizamos SessionManager aquí
                 SessionManager.authToken = user.token
                 SessionManager.currentUser = user
+                SessionManager.saveSession()
             },
             onLogout = {
                 SessionManager.authToken = null
                 SessionManager.currentUser = null
+                SessionManager.clearSession()
             }
         )
 
