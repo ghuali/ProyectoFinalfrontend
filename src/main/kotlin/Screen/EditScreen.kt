@@ -227,7 +227,7 @@ class EditScreen(private val token: String): Screen{
                                 apiEditUser(
                                     idUsuario = idUsuario,
                                     nombre = nombre.takeIf { it.isNotBlank() },
-                                    correo = email.takeIf { it.isNotBlank() },
+                                    email = email.takeIf { it.isNotBlank() },
                                     password = password.takeIf { it.isNotBlank() },
                                     token = token,
                                     onSuccessResponse = {
