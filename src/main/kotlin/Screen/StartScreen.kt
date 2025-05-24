@@ -1,6 +1,7 @@
 package Screen
 
 import ViewModel.SessionManager
+import ViewModel.SessionManager.cargarPerfil
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -26,8 +27,12 @@ import utils.RegisterDialog
 class StartScreen : Screen {
     @Composable
     override fun Content() {
-        val usuario = SessionManager.currentUser
+        // Cargar sesión al inicio, solo una vez
+        LaunchedEffect(Unit) {
+            SessionManager.loadSession()
+        }
 
+        val usuario = SessionManager.currentUser
 
         PantallaInicio(
             usuario = usuario,
@@ -35,10 +40,12 @@ class StartScreen : Screen {
                 println("Asignando token: ${user.token}")
                 SessionManager.authToken = user.token
                 SessionManager.currentUser = user
+                SessionManager.saveSession() // <-- persistir datos
             },
             onLogout = {
                 SessionManager.authToken = null
                 SessionManager.currentUser = null
+                SessionManager.clearSession() // <-- borrar datos persistidos
             }
         )
     }
