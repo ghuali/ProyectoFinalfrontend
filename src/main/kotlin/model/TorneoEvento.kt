@@ -10,19 +10,19 @@ data class Torneo(
     val fecha_inicio: String,
     val fecha_fin: String,
     val ubicacion: String,
-    val id_evento: Int,
+    val id_evento: Int?,
     val id_juego: Int
 )
 
 @Serializable
 data class Evento(
-    @SerialName("id_evento")
-    val idEvento: Int,
+    val id_evento: Int,
     val nombre: String,
-    val tipo: String,
-    @SerialName("año")
-    val anio: Int
+    val tipo: String,   // "anual" o "mensual"
+    val año: Int,
+    val mes: Int? = null
 )
+
 @Serializable
 data class TorneoCreateRequest(
     val nombre: String,
@@ -38,7 +38,7 @@ data class TorneoCreateRequest(
 data class Clasificacion(
     val id_clasificacion: Int,
     val puntos: Int,
-    val posicion: Int,
+    val posicion: Int?,   // Nullable Int para aceptar null del JSON
     val usuario: String? = null,
     val equipo: String? = null
 )
