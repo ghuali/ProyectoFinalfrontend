@@ -10,3 +10,9 @@ data class User(
     val email: String,
     val token: String? = null
 )
+
+@Serializable
+data class Usuario(
+    val id_usuario: Int,
+    val nombre: String
+)
