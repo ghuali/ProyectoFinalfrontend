@@ -83,6 +83,12 @@ class StartScreen : Screen {
                             }) {
                                 Text("Editar perfil")
                             }
+                            DropdownMenuItem(onClick = {
+                                expanded = false
+                                navigator?.push(EquipoScreen())
+                            }) {
+                                Text("Cerrar Sesión")
+                            }
 
                             DropdownMenuItem(onClick = {
                                 expanded = false
