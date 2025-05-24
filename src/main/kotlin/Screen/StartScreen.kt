@@ -87,7 +87,7 @@ class StartScreen : Screen {
                                 expanded = false
                                 navigator?.push(EquipoScreen())
                             }) {
-                                Text("Cerrar Sesión")
+                                Text("Equipo")
                             }
 
                             DropdownMenuItem(onClick = {
