@@ -26,6 +26,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import model.Juego
 import model.JugadorResumen
+import model.JugadorTabla
 import model.User
 import network.apiLogIn
 import network.apiRegister
@@ -241,10 +242,19 @@ class PlayerScreen : Screen {
                         .height(600.dp)
                         .padding(horizontal = 16.dp)
                 ) {
-                    val jugadores = selectedGame?.let { jugadoresPorJuego[it.id_juego] } ?: emptyList()
+                    val jugadoresResumen = selectedGame?.let { jugadoresPorJuego[it.id_juego] } ?: emptyList()
+
+                    val jugadoresTabla = jugadoresResumen.map {
+                        JugadorTabla(
+                            nombre = it.nombre,
+                            victorias = it.victorias ?: 0,
+                            derrotas = it.derrotas ?: 0
+                        )
+                    }
+
                     val totalFilas = 14
-                    val jugadoresRellenados = jugadores + List(totalFilas - jugadores.size) {
-                        JugadorResumen("-", 0, 0)
+                    val jugadoresRellenados = jugadoresTabla + List(totalFilas - jugadoresTabla.size) {
+                        JugadorTabla("-", 0, 0)
                     }
 
                     itemsIndexed(jugadoresRellenados) { index, jugador ->
