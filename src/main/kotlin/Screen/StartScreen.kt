@@ -166,7 +166,7 @@ class StartScreen : Screen {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Button(
                             onClick = { navigator?.push(WelcomeScreen()) },
-                            colors = ButtonDefaults.buttonColors(Color(0xFFFFEB3B)),
+                            colors = ButtonDefaults.buttonColors(Color(0xFFFFFF00)),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 6.dp)
@@ -176,7 +176,7 @@ class StartScreen : Screen {
 
                         Button(
                             onClick = { navigator?.push(PlayerScreen()) },
-                            colors = ButtonDefaults.buttonColors(Color(0xFFFFB74D)),
+                            colors = ButtonDefaults.buttonColors(Color(0xFFFFEB3B)),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 6.dp)
@@ -186,7 +186,7 @@ class StartScreen : Screen {
 
                         Button(
                             onClick = { navigator?.push(EventosScreen()) },
-                            colors = ButtonDefaults.buttonColors(Color(0xFFFF9800)),
+                            colors = ButtonDefaults.buttonColors(Color(0xFFFFF176)),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 6.dp)
@@ -196,7 +196,7 @@ class StartScreen : Screen {
 
                         Button(
                             onClick = { navigator?.push(TorneoScreen()) },
-                            colors = ButtonDefaults.buttonColors(Color(0xFFFF9800)),
+                            colors = ButtonDefaults.buttonColors(Color(0xFFFFF9C4)),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 6.dp)
