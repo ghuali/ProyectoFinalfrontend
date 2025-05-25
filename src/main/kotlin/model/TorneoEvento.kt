@@ -20,7 +20,13 @@ data class Evento(
     val nombre: String,
     val tipo: String,   // "anual" o "mensual"
     val año: Int,
-    val mes: Int? = null
+)
+
+@Serializable
+data class EventoCreateRequest(
+    val nombre: String,
+    val tipo: String,
+    val año: Int
 )
 
 @Serializable
@@ -29,9 +35,10 @@ data class TorneoCreateRequest(
     val fecha_inicio: String,
     val fecha_fin: String,
     val ubicacion: String,
-    val id_evento: Int,
-    val id_juego: Int
+    val id_juego: Int,
+    val id_evento: Int? = null  // opcional
 )
+
 
 @Serializable
 data class TorneoCompleto(
