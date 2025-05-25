@@ -11,6 +11,26 @@ import kotlinx.coroutines.withContext
 import model.Juego
 import network.NetworkUtils.httpClient
 
+fun getTodosLosJuegos(onSuccessResponse: (List<Juego>) -> Unit) {
+    val url = "http://127.0.0.1:5000/juegos"
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val response = httpClient.get(url)
+            val responseBody = response.bodyAsText()
+            if (response.status == HttpStatusCode.OK) {
+                val juegos = response.body<List<Juego>>()
+                withContext(Dispatchers.Main) {
+                    onSuccessResponse(juegos)
+                }
+            } else {
+                println("Error: ${response.status}, Body: $responseBody")
+            }
+        } catch (e: Exception) {
+            println("Exception: ${e.message}")
+        }
+    }
+}
+
 fun getJuegosPorEquipo(onSuccessResponse: (List<Juego>) -> Unit) {
     val url = "http://127.0.0.1:5000/juegos?tipo=equipo"
     CoroutineScope(Dispatchers.IO).launch {
