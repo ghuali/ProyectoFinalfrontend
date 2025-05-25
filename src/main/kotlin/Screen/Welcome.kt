@@ -32,6 +32,16 @@ import network.getEquiposPorJuego
 import network.getJuegosPorEquipo
 import ViewModel.SessionManager
 import ViewModel.SessionManager.currentUser
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import model.EquipoConCodigo
+import network.apiObtenerEquipoPorFundador
+import network.getJugadoresPorJuego
+import network.salirJuegoEquipo
+import network.salirJuegoIndividual
+import network.unirseJuegoEquipo
+import network.unirseJuegoIndividual
 import utils.LoginDialog
 import utils.RegisterDialog
 
@@ -65,7 +75,7 @@ class WelcomeScreen : Screen {
         usuario: User?,
         onLoginSuccess: (User) -> Unit,
         onLogout: () -> Unit
-    ){
+    ) {
         val navigator = LocalNavigator.current
 
         var showSignInDialog by remember { mutableStateOf(false) }
@@ -74,7 +84,25 @@ class WelcomeScreen : Screen {
 
         var juegos by remember { mutableStateOf<List<Juego>>(emptyList()) }
         var selectedGameIndex by remember { mutableStateOf(0) }
-        var equipos by remember { mutableStateOf<List<EquipoResumen>>(emptyList()) }
+
+        var equipos by remember { mutableStateOf(emptyList<EquipoResumen>()) }
+
+        var miEquipo by remember { mutableStateOf<EquipoConCodigo?>(null) }
+
+        LaunchedEffect(usuario?.id) {
+            usuario?.id?.let { id ->
+                apiObtenerEquipoPorFundador(
+                    idUsuario = id,
+                    onSuccess = { equipo ->
+                        miEquipo = equipo
+                        println("Equipo del usuario: $equipo")
+                    },
+                    onError = { error ->
+                        println("Error al obtener equipo: $error")
+                    }
+                )
+            }
+        }
 
         LaunchedEffect(Unit) {
             getJuegosPorEquipo { juegosApi ->
@@ -92,6 +120,7 @@ class WelcomeScreen : Screen {
             val juegoSeleccionado = juegos.getOrNull(selectedGameIndex)
             if (juegoSeleccionado != null) {
                 getEquiposPorJuego(juegoSeleccionado.id_juego) { equiposApi ->
+                    println("Equipos cargados para juego ${juegoSeleccionado.nombre}: $equiposApi")
                     equipos = equiposApi
                 }
             } else {
@@ -99,7 +128,7 @@ class WelcomeScreen : Screen {
             }
         }
 
-        val selectedGame = juegos.getOrNull(selectedGameIndex)?.nombre ?: ""
+        val selectedGame = juegos.getOrNull(selectedGameIndex)
 
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -218,7 +247,7 @@ class WelcomeScreen : Screen {
                             .padding(horizontal = 24.dp, vertical = 8.dp)
                     ) {
                         Text(
-                            text = selectedGame.ifEmpty { "No hay juegos" },
+                            text = selectedGame?.nombre ?: "No hay juegos",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.Black
@@ -233,18 +262,76 @@ class WelcomeScreen : Screen {
                 }
 
                 // Título del juego
-                Box(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 16.dp),
-                    contentAlignment = Alignment.Center
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    // Título del juego a la izquierda
                     Text(
-                        selectedGame,
+                        text = selectedGame?.nombre ?: "",
                         fontSize = 36.sp,
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
+
+                    // Botones a la derecha
+                    Row {
+                        if (miEquipo != null && selectedGame != null) {
+                            Button(
+                                onClick = {
+                                    val token = SessionManager.authToken
+                                    if (token != null) {
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            try {
+                                                unirseJuegoEquipo(selectedGame.id_juego, miEquipo!!.id_equipo, token) {
+                                                    println("Equipo se ha unido al juego")
+                                                    getEquiposPorJuego(selectedGame.id_juego) { equiposApi ->
+                                                        equipos = equiposApi
+                                                        println("Equipos actualizados: $equipos")
+                                                    }
+                                                }
+                                            } catch (e: Exception) {
+                                                println("Error al unirse equipo: ${e.message}")
+                                            }
+                                        }
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green),
+                                modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                            ) {
+                                Text("Unirse")
+                            }
+
+                            Button(
+                                onClick = {
+                                    val token = SessionManager.authToken
+                                    if (token != null) {
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            try {
+                                                salirJuegoEquipo(selectedGame.id_juego, miEquipo!!.id_equipo, token) {
+                                                    println("Equipo ha salido del juego")
+                                                    getEquiposPorJuego(selectedGame.id_juego) { equiposApi ->
+                                                        equipos = equiposApi
+                                                        println("Equipos actualizados: $equipos")
+                                                    }
+                                                }
+                                            } catch (e: Exception) {
+                                                println("Error al salir equipo: ${e.message}")
+                                            }
+                                        }
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
+                            ) {
+                                Text("Salir")
+                            }
+                        } else {
+                            Text("No eres fundador de ningún equipo")
+                        }
+                    }
                 }
 
                 // Tabla: cabecera
@@ -259,7 +346,12 @@ class WelcomeScreen : Screen {
                 ) {
                     val totalFilas = 14
                     val equiposRellenados = equipos + List(totalFilas - equipos.size) {
-                        EquipoResumen("-", 0, 0)
+                        EquipoResumen(
+                            id_equipo = -1,
+                            nombre = "-",
+                            victorias = 0,
+                            derrotas = 0
+                        )
                     }
 
                     itemsIndexed(equiposRellenados) { index, equipo ->
@@ -309,7 +401,7 @@ class WelcomeScreen : Screen {
 
         }
     }
-    }
+}
 
     @Composable
     private fun TableHeader() {
@@ -361,5 +453,4 @@ class WelcomeScreen : Screen {
             }
         }
     }
-
 
