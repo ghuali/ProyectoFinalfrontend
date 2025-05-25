@@ -263,58 +263,60 @@ class PlayerScreen : Screen {
 
                     // Botones a la derecha
                     Row {
-                        Button(
-                            onClick = {
-                                selectedGame?.id_juego?.let { idJuego ->
-                                    val token = SessionManager.authToken
-                                    if (token != null) {
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            try {
-                                                unirseJuegoIndividual(idJuego, token) {
-                                                    println("Te has unido al juego individual")
-                                                    getJugadoresPorJuego(idJuego) { jugadores ->
-                                                        jugadoresPorJuego = mapOf(idJuego to jugadores)
+                        if (usuario != null) {
+                            Button(
+                                onClick = {
+                                    selectedGame?.id_juego?.let { idJuego ->
+                                        val token = SessionManager.authToken
+                                        if (token != null) {
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                try {
+                                                    unirseJuegoIndividual(idJuego, token) {
+                                                        println("Te has unido al juego individual")
+                                                        getJugadoresPorJuego(idJuego) { jugadores ->
+                                                            jugadoresPorJuego = mapOf(idJuego to jugadores)
+                                                        }
                                                     }
+                                                } catch (e: Exception) {
+                                                    println("Error al unirse: ${e.message}")
                                                 }
-                                            } catch (e: Exception) {
-                                                println("Error al unirse: ${e.message}")
                                             }
+                                        } else {
+                                            println("No hay token, usuario no autenticado")
                                         }
-                                    } else {
-                                        println("No hay token, usuario no autenticado")
                                     }
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green),
-                            modifier = Modifier.padding(end = 8.dp)
-                        ) {
-                            Text("Unirse")
-                        }
-                        Button(
-                            onClick = {
-                                selectedGame?.id_juego?.let { idJuego ->
-                                    val token = SessionManager.authToken
-                                    if (token != null) {
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            try {
-                                                salirJuegoIndividual(idJuego, token) {
-                                                    println("Has salido del juego individual")
-                                                    getJugadoresPorJuego(idJuego) { jugadores ->
-                                                        jugadoresPorJuego = mapOf(idJuego to jugadores)
+                                },
+                                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green),
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Text("Unirse")
+                            }
+                            Button(
+                                onClick = {
+                                    selectedGame?.id_juego?.let { idJuego ->
+                                        val token = SessionManager.authToken
+                                        if (token != null) {
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                try {
+                                                    salirJuegoIndividual(idJuego, token) {
+                                                        println("Has salido del juego individual")
+                                                        getJugadoresPorJuego(idJuego) { jugadores ->
+                                                            jugadoresPorJuego = mapOf(idJuego to jugadores)
+                                                        }
                                                     }
+                                                } catch (e: Exception) {
+                                                    println("Error al salir: ${e.message}")
                                                 }
-                                            } catch (e: Exception) {
-                                                println("Error al salir: ${e.message}")
                                             }
+                                        } else {
+                                            println("No hay token, usuario no autenticado")
                                         }
-                                    } else {
-                                        println("No hay token, usuario no autenticado")
                                     }
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
-                        ) {
-                            Text("Salir")
+                                },
+                                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
+                            ) {
+                                Text("Salir")
+                            }
                         }
                     }
                 }

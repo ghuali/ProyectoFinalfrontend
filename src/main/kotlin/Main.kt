@@ -1,7 +1,6 @@
 import androidx.compose.ui.window.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.Navigator
 import Screen.StartScreen
 import ViewModel.SessionManager
