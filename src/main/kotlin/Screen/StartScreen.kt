@@ -1,14 +1,11 @@
 package Screen
 
 import ViewModel.SessionManager
-import ViewModel.SessionManager.cargarPerfil
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -95,6 +92,15 @@ class StartScreen : Screen {
                                 navigator?.push(EquipoScreen())
                             }) {
                                 Text("Equipo")
+                            }
+
+                            if (usuario.rol == "administrador") {
+                                DropdownMenuItem(onClick = {
+                                    expanded = false
+                                    navigator?.push(AdminScreen())  // O la pantalla que administre
+                                }) {
+                                    Text("Administrar")
+                                }
                             }
 
                             DropdownMenuItem(onClick = {
@@ -228,6 +234,4 @@ class StartScreen : Screen {
             )
         }
     }
-
-
 }
