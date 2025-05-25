@@ -14,6 +14,7 @@ data class Equipo(
 
 @Serializable
 data class EquipoResumen(
+    val id_equipo: Int,
     val nombre: String,
     val victorias: Int,
     val derrotas: Int
@@ -29,5 +30,6 @@ data class EquipoConCodigo(
     val victorias: Int,
     val derrotas: Int
 )
+
 
 
