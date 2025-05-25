@@ -24,14 +24,19 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.Dialog
 import apiEntrarTorneoJugadorIndividual
+import apiInscribirEquipoEnTorneo
+import apiSalirTorneoEquipo
 import apiSalirTorneoJugadorIndividual
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import kotlinx.coroutines.delay
 import model.Clasificacion
+import model.EquipoConCodigo
 import model.Evento
+import model.Juego
 import model.Torneo
 import model.TorneoCompleto
+import model.TorneoConTipo
 import model.User
 import network.*
 import utils.LoginDialog
@@ -67,14 +72,116 @@ class TorneoScreen : Screen {
         val navigator = LocalNavigator.current
 
         var eventos by remember { mutableStateOf<List<Evento>>(emptyList()) }
+        var juegos by remember { mutableStateOf<List<Juego>>(emptyList()) }
+        var torneosConTipo by remember { mutableStateOf<List<TorneoConTipo>>(emptyList()) }
         var torneos by remember { mutableStateOf<List<TorneoCompleto>>(emptyList()) }
         var clasificacion by remember { mutableStateOf<List<Clasificacion>>(emptyList()) }
+        var equipoObtenido by remember { mutableStateOf<EquipoConCodigo?>(null) }
+        var cargandoEquipo by remember { mutableStateOf(false) }
+
+        println("Juegos recibidos:")
+        juegos.forEach {
+            println("Juego: ${it.nombre}, es_individual: ${it.es_individual}")
+        }
 
         var eventoSeleccionado by remember { mutableStateOf<Evento?>(null) }
-        var torneoSeleccionado by remember { mutableStateOf<TorneoCompleto?>(null) }
+        var torneoSeleccionado by remember { mutableStateOf<TorneoConTipo?>(null) }
+
+        var isLoading by remember { mutableStateOf(false) }
+        var errorMsg by remember { mutableStateOf<String?>(null) }
+        var successMsg by remember { mutableStateOf<String?>(null) }
+
 
         var showSignInDialog by remember { mutableStateOf(false) }
         var showSignUpDialog by remember { mutableStateOf(false) }
+
+        fun inscribirIndividual(torneoId: Int) {
+            isLoading = true
+            errorMsg = null
+            successMsg = null
+
+            apiEntrarTorneoJugadorIndividual(
+                torneoId = torneoId,
+                token = SessionManager.authToken ?: "",
+                onSuccess = {
+                    isLoading = false
+                    successMsg = "¡Inscripción exitosa!"
+                    getClasificacionPorTorneo(torneoId) {
+                        clasificacion = it
+                    }
+                },
+                onError = { error ->
+                    isLoading = false
+                    errorMsg = error
+                }
+            )
+        }
+
+        fun inscribirEquipo(torneoId: Int, equipoId: Int) {
+            isLoading = true
+            errorMsg = null
+            successMsg = null
+
+            apiInscribirEquipoEnTorneo(
+                torneoId = torneoId,
+                equipoId = equipoId,
+                token = SessionManager.authToken ?: "",
+                onSuccess = {
+                    isLoading = false
+                    successMsg = "¡Equipo inscrito exitosamente!"
+                    getClasificacionPorTorneo(torneoId) {
+                        clasificacion = it
+                    }
+                },
+                onError = { error ->
+                    isLoading = false
+                    errorMsg = error
+                }
+            )
+        }
+
+        fun salirIndividual(torneoId: Int) {
+            isLoading = true
+            errorMsg = null
+            successMsg = null
+
+            apiSalirTorneoJugadorIndividual(
+                torneoId = torneoId,
+                token = SessionManager.authToken ?: "",
+                onSuccess = {
+                    isLoading = false
+                    successMsg = "Saliste del torneo correctamente"
+                    clasificacion = emptyList()
+                    torneoSeleccionado = null
+                },
+                onError = { error ->
+                    isLoading = false
+                    errorMsg = error
+                }
+            )
+        }
+
+        fun salirEquipo(torneoId: Int, equipoId: Int) {
+            isLoading = true
+            errorMsg = null
+            successMsg = null
+
+            apiSalirTorneoEquipo(
+                torneoId = torneoId,
+                equipoId = equipoId,
+                token = SessionManager.authToken ?: "",
+                onSuccess = {
+                    isLoading = false
+                    successMsg = "El equipo salió del torneo correctamente"
+                    clasificacion = emptyList()
+                    torneoSeleccionado = null
+                },
+                onError = { error ->
+                    isLoading = false
+                    errorMsg = error
+                }
+            )
+        }
 
         // Cargar eventos al iniciar
         LaunchedEffect(Unit) {
@@ -83,10 +190,44 @@ class TorneoScreen : Screen {
 
         LaunchedEffect(torneoSeleccionado) {
             while (torneoSeleccionado != null) {
-                getClasificacionPorTorneo(torneoSeleccionado!!.id_torneo) {
+                getClasificacionPorTorneo(torneoSeleccionado!!.torneo.id_torneo) {
                     clasificacion = it
                 }
-                delay(5000) // Actualiza cada 5 segundos (ajusta según necesidad)
+                delay(5000) // Actualiza cada 5 segundos
+            }
+        }
+        LaunchedEffect(usuario?.id, torneoSeleccionado?.tipo) {
+            if (usuario != null && torneoSeleccionado?.tipo == "equipo") {
+                cargandoEquipo = true
+                apiObtenerEquipoPorFundador(
+                    idUsuario = usuario.id,
+                    onSuccess = { equipo ->
+                        equipoObtenido = equipo
+                        cargandoEquipo = false
+                    },
+                    onError = {
+                        equipoObtenido = null
+                        cargandoEquipo = false
+                    }
+                )
+            }
+        }
+
+
+
+        LaunchedEffect(eventoSeleccionado) {
+            eventoSeleccionado?.let { evento ->
+                getTodosLosJuegos { juegosObtenidos ->
+                    juegos = juegosObtenidos
+                    getTorneosPorEvento(evento.id_evento) { torneosObtenidos ->
+                        torneosConTipo = torneosObtenidos.map { torneo ->
+                            val juego = juegos.find { it.id_juego == torneo.id_juego }
+                            val tipo = if (juego?.es_individual == true) "individual" else "equipo"
+                            println("Torneo: ${torneo.nombre}, Tipo: $tipo")
+                            TorneoConTipo(torneo = torneo, tipo = tipo)
+                        }
+                    }
+                }
             }
         }
 
@@ -126,12 +267,12 @@ class TorneoScreen : Screen {
                         )
                     }
                     Row {
-                        if (usuario != null) {
+                        if (usuario != null && !SessionManager.authToken.isNullOrEmpty()) {
                             var expanded by remember { mutableStateOf(false) }
 
                             Box {
                                 Text(
-                                    currentUser?.nombre ?: "Usuario",
+                                    usuario.nombre,
                                     color = Color.Black,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.clickable { expanded = true }
@@ -189,49 +330,73 @@ class TorneoScreen : Screen {
                 when {
                     torneoSeleccionado != null -> {
                         // Mostrar Clasificación
-                        Text("Clasificación - ${torneoSeleccionado!!.nombre}", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("Clasificación - ${torneoSeleccionado!!.torneo.nombre}", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "Tipo de torneo: ${torneoSeleccionado?.tipo ?: "Ninguno"}",
+                            color = Color.White
+                        )
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            Button(
-                                onClick = {
-                                    if (usuario != null) {
-                                        apiEntrarTorneoJugadorIndividual(
-                                            torneoId = torneoSeleccionado!!.id_torneo,
-                                            token = SessionManager.authToken ?: "",
-                                            onSuccess = {
-                                                getClasificacionPorTorneo(torneoSeleccionado!!.id_torneo) {
-                                                    clasificacion = it
-                                                }
-                                            },
-                                            onError = {   /* Mostrar error */ }
-                                        )
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green)
-                            ) {
-                                Text("Entrar", color = Color.White)
-                            }
+                            if (torneoSeleccionado!!.tipo == "individual") {
+                                Button(
+                                    onClick = {
+                                        if (usuario != null) {
+                                            inscribirIndividual(torneoSeleccionado!!.torneo.id_torneo)
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green)
+                                ) {
+                                    Text("Entrar", color = Color.White)
+                                }
 
-                            Button(
-                                onClick = {
-                                    if (usuario != null) {
-                                        apiSalirTorneoJugadorIndividual(
-                                            torneoId = torneoSeleccionado!!.id_torneo,
-                                            token = SessionManager.authToken ?: "",
-                                            onSuccess = { getClasificacionPorTorneo(torneoSeleccionado!!.id_torneo) {
-                                                clasificacion = it
-                                            } },
-                                            onError = { error -> /* Mostrar error */ }
+                                Button(
+                                    onClick = {
+                                        if (usuario != null) {
+                                            salirIndividual(torneoSeleccionado!!.torneo.id_torneo)
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
+                                ) {
+                                    Text("Salir", color = Color.White)
+                                }
+
+                            } else if (torneoSeleccionado!!.tipo == "equipo") {
+                                when {
+                                    cargandoEquipo -> {
+                                        CircularProgressIndicator(color = Color.White)
+                                    }
+                                    equipoObtenido != null -> {
+                                        Button(
+                                            onClick = {
+                                                inscribirEquipo(torneoSeleccionado!!.torneo.id_torneo, equipoObtenido!!.id_equipo)
+                                            },
+                                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue)
+                                        ) {
+                                            Text("Entrar como equipo", color = Color.White)
+                                        }
+
+                                        Button(
+                                            onClick = {
+                                                salirEquipo(torneoSeleccionado!!.torneo.id_torneo, equipoObtenido!!.id_equipo)
+                                            },
+                                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
+                                        ) {
+                                            Text("Salir del torneo", color = Color.White)
+                                        }
+                                    }
+                                    else -> {
+                                        Text(
+                                            text = "No eres fundador de ningún equipo",
+                                            color = Color.White,
+                                            fontStyle = FontStyle.Italic,
+                                            modifier = Modifier.padding(8.dp)
                                         )
                                     }
-                                },
-                                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
-                            ) {
-                                Text("Salir", color = Color.White)
+                                }
                             }
                         }
 
@@ -273,34 +438,35 @@ class TorneoScreen : Screen {
                         Text("Torneos de: ${eventoSeleccionado!!.nombre}", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        if (torneos.isEmpty()) {
+                        if (torneosConTipo.isEmpty()) {
                             Text("Cargando torneos...", color = Color.LightGray)
                         } else {
                             LazyColumn {
-                                items(torneos) { torneo ->
+                                items(torneosConTipo) { torneoConTipo ->  // <-- aquí la lista con tipo
                                     Card(
                                         backgroundColor = Color.DarkGray,
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(vertical = 6.dp)
                                             .clickable {
-                                                torneoSeleccionado = torneo
+                                                torneoSeleccionado = torneoConTipo  // <-- asignamos TorneoConTipo
                                                 clasificacion = emptyList()
-                                                getClasificacionPorTorneo(torneo.id_torneo) {
+                                                getClasificacionPorTorneo(torneoConTipo.torneo.id_torneo) {
                                                     clasificacion = it
                                                 }
                                             }
                                             .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
                                     ) {
                                         Column(modifier = Modifier.padding(16.dp)) {
-                                            Text(torneo.nombre, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Yellow)
-                                            Text("Desde: ${torneo.fecha_inicio}  Hasta: ${torneo.fecha_fin}", fontSize = 14.sp, color = Color.White)
-                                            Text("Ubicación: ${torneo.ubicacion}", fontSize = 14.sp, color = Color.White)
+                                            Text(torneoConTipo.torneo.nombre, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Yellow)
+                                            Text("Desde: ${torneoConTipo.torneo.fecha_inicio}  Hasta: ${torneoConTipo.torneo.fecha_fin}", fontSize = 14.sp, color = Color.White)
+                                            Text("Ubicación: ${torneoConTipo.torneo.ubicacion}", fontSize = 14.sp, color = Color.White)
                                         }
                                     }
                                 }
                             }
                         }
+
                     }
 
                     else -> {
@@ -320,11 +486,6 @@ class TorneoScreen : Screen {
                                             .padding(vertical = 6.dp)
                                             .clickable {
                                                 eventoSeleccionado = evento
-                                                torneos = emptyList()
-                                                getTorneosPorEvento(evento.id_evento) { torneosResponse ->
-                                                    // Filtrar torneos que pertenezcan al evento seleccionado
-                                                    torneos = torneosResponse.filter { it.id_evento == evento.id_evento }
-                                                }
                                             }
                                             .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
                                     ) {
@@ -374,3 +535,5 @@ class TorneoScreen : Screen {
         }
     }
 }
+
+
