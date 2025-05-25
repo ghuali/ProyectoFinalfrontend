@@ -156,6 +156,22 @@ class EquipoScreen: Screen {
                                 onDismissRequest = { expanded = false },
                             ) {
                                 DropdownMenuItem(onClick = {
+                                    println("Token antes de abrir EditScreen: ${SessionManager.authToken}")
+                                    expanded = false
+                                    navigator?.push(EditScreen())
+                                }) {
+                                    Text("Editar perfil")
+                                }
+
+                                if (usuario?.rol == "administrador") {
+                                    DropdownMenuItem(onClick = {
+                                        expanded = false
+                                        navigator?.push(AdminScreen())  // O la pantalla que administre
+                                    }) {
+                                        Text("Administrar")
+                                    }
+                                }
+                                DropdownMenuItem(onClick = {
                                     expanded = false
                                     onLogout()
                                     navigator?.pop()
