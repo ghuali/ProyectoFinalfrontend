@@ -94,6 +94,14 @@ class EditScreen(): Screen{
                                 expanded = expanded,
                                 onDismissRequest = { expanded = false },
                             ) {
+                                if (usuario?.rol == "administrador") {
+                                    DropdownMenuItem(onClick = {
+                                        expanded = false
+                                        navigator?.push(AdminScreen())  // O la pantalla que administre
+                                    }) {
+                                        Text("Administrar")
+                                    }
+                                }
                                 DropdownMenuItem(onClick = {
                                     expanded = false
                                     onLogout()
