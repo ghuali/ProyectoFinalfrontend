@@ -6,6 +6,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import Screen.StartScreen
 import ViewModel.SessionManager
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.res.painterResource
 
 fun main() {
     // Cargar sesión antes de mostrar la ventana
@@ -15,6 +16,7 @@ fun main() {
         Window(
             onCloseRequest = ::exitApplication,
             title = "Canary's Esports",
+            icon = painterResource("CanaryEsportsImg.png"),
             state = WindowState(
                 placement = WindowPlacement.Maximized,
                 size = DpSize.Unspecified
