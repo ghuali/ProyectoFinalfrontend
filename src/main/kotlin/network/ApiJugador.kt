@@ -7,6 +7,7 @@ import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import model.JugadorResumen
 import network.NetworkUtils.httpClient
 
@@ -18,7 +19,9 @@ fun getJugadoresPorJuego(idJuego: Int, onSuccessResponse: (List<JugadorResumen>)
             val response = httpClient.get(url)
             if (response.status == HttpStatusCode.OK) {
                 val jugadores = response.body<List<JugadorResumen>>()
-                onSuccessResponse(jugadores)
+                withContext(Dispatchers.Main) {
+                    onSuccessResponse(jugadores)
+                }
             } else {
                 println("Error: ${response.status}, Body: ${response.bodyAsText()}")
             }
