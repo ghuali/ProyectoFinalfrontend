@@ -7,6 +7,7 @@ import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import model.Juego
 import network.NetworkUtils.httpClient
 
@@ -18,7 +19,9 @@ fun getJuegosPorEquipo(onSuccessResponse: (List<Juego>) -> Unit) {
             val responseBody = response.bodyAsText()
             if (response.status == HttpStatusCode.OK) {
                 val juegos = response.body<List<Juego>>()
-                onSuccessResponse(juegos)
+                withContext(Dispatchers.Main) {  // <--- Agrega esto
+                    onSuccessResponse(juegos)
+                }
             } else {
                 println("Error: ${response.status}, Body: $responseBody")
             }
