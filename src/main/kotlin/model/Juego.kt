@@ -8,3 +8,4 @@ data class Juego(
     val nombre: String,
     val es_individual: Boolean
 )
+
