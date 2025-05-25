@@ -173,6 +173,15 @@ class PlayerScreen : Screen {
                                         Text("Equipo")
                                     }
 
+                                    if (usuario.rol == "administrador") {
+                                        DropdownMenuItem(onClick = {
+                                            expanded = false
+                                            navigator?.push(AdminScreen())  // O la pantalla que administre
+                                        }) {
+                                            Text("Administrar")
+                                        }
+                                    }
+
                                     DropdownMenuItem(onClick = {
                                         expanded = false
                                         onLogout()
