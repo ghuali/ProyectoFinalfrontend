@@ -41,7 +41,13 @@ data class TorneoCompleto(
     val fecha_fin: String,
     val ubicacion: String,
     val id_evento: Int? = null,
-    val nombre_evento: String? = null
+    val nombre_evento: String? = null,
+    val id_juego: Int
+)
+
+data class TorneoConTipo(
+    val torneo: TorneoCompleto,
+    val tipo: String // "individual" o "equipo"
 )
 
 @Serializable
